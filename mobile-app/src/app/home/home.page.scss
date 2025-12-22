@@ -1,0 +1,241 @@
+.header-background {
+  --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --color: white;
+}
+
+.title-text {
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+.home-content {
+  --background: #f8f9fa;
+}
+
+.profile-section {
+  padding: 20px;
+  background: white;
+  margin: 0;
+}
+
+.profile-card {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  position: relative;
+}
+
+.profile-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 16px;
+  border: 3px solid #f0f0f0;
+}
+
+.profile-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.profile-info h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.profile-info p {
+  margin: 4px 0;
+  color: #7f8c8d;
+  font-size: 0.9rem;
+}
+
+.profile-arrow {
+  color: #bdc3c7;
+}
+
+.stats-section {
+  padding: 20px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.stat-card {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+}
+
+.stat-icon {
+  background: #f8f9fa;
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.stat-icon ion-icon {
+  font-size: 1.5rem;
+  color: #667eea;
+}
+
+.stat-info h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.stat-info p {
+  margin: 0;
+  color: #95a5a6;
+  font-size: 0.8rem;
+}
+
+.today-section,
+.actions-section,
+.recent-section {
+  padding: 20px;
+}
+
+.section-title {
+  margin: 0 0 16px 0;
+  font-size: 1.1rem;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.status-card {
+  margin: 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+}
+
+.status-icon-container {
+  width: 50px;
+  height: 50px;
+  background: #f8f9fa;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+}
+
+.status-icon.checkin {
+  color: #27ae60;
+  font-size: 1.5rem;
+}
+
+.status-icon.checkout {
+  color: #e74c3c;
+  font-size: 1.5rem;
+}
+
+.status-info {
+  flex: 1;
+}
+
+.status-info h4 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1rem;
+}
+
+.status-time {
+  margin: 4px 0 2px 0;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.status-location {
+  margin: 0;
+  color: #95a5a6;
+  font-size: 0.85rem;
+}
+
+.status-divider {
+  height: 1px;
+  background: #ecf0f1;
+  margin: 0 16px;
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.action-button {
+  height: 120px;
+  --border-radius: 16px;
+  --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  margin: 0;
+}
+
+.action-button ion-icon {
+  margin-bottom: 8px;
+}
+
+.action-button p {
+  margin: 0;
+  font-weight: 500;
+}
+
+.action-button.primary {
+  --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --color: white;
+}
+
+.action-button.secondary {
+  --background: white;
+  --color: #667eea;
+  --border: 2px solid #667eea;
+}
+
+.activity-list {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  margin: 0;
+}
+
+// Ionic overrides
+ion-header.header-background ion-toolbar {
+  --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+ion-card {
+  --background: white;
+}
+
+ion-badge {
+  --border-radius: 12px;
+  font-weight: 500;
+}

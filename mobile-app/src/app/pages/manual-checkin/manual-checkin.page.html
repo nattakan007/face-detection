@@ -1,0 +1,89 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/scan"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ getNextAction() }}ด้วยตัวเอง</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="checkin-container">
+    <!-- Name Input Card -->
+    <ion-card class="name-card">
+      <ion-card-header>
+        <ion-card-title>กรอกข้อมูล</ion-card-title>
+        <ion-card-subtitle>กรอกชื่อแล้วถ่ายรูปยืนยัน</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label position="stacked">ชื่อ-นามสกุล *</ion-label>
+          <ion-input
+            type="text"
+            [(ngModel)]="employeeName"
+            placeholder="กรุณากรอกชื่อ-นามสกุล"
+            [disabled]="capturedPhoto !== null"
+            required
+          ></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">แผนก (ไม่บังคับ)</ion-label>
+          <ion-input
+            type="text"
+            [(ngModel)]="department"
+            placeholder="กรอกแผนก"
+            [disabled]="capturedPhoto !== null"
+          ></ion-input>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Camera Section -->
+    <ion-card class="camera-card">
+      <ion-card-header>
+        <ion-card-title>ถ่ายรูปยืนยัน</ion-card-title>
+        <ion-card-subtitle>
+          {{ capturedPhoto ? 'ถ่ายรูปสำเร็จ!' : employeeName ?
+          'กดปุ่มถ่ายภาพเพื่อบันทึก' : 'กรุณากรอกชื่อก่อน' }}
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Show Live Camera when no photo taken -->
+        <div class="camera-section" *ngIf="!capturedPhoto">
+          <app-live-camera
+            (onCapture)="onPhotoCaptured($event)"
+            #liveCamera
+          ></app-live-camera>
+        </div>
+
+        <!-- Show captured photo -->
+        <div class="photo-section" *ngIf="capturedPhoto">
+          <div class="captured-photo-container">
+            <img [src]="capturedPhoto" alt="Captured" class="captured-photo" />
+            <div class="capture-success">
+              <ion-icon name="checkmark-circle" color="success"></ion-icon>
+              <span>ถ่ายรูปสำเร็จ</span>
+            </div>
+          </div>
+          <ion-button
+            fill="outline"
+            size="small"
+            (click)="retakePhoto()"
+            class="retake-button"
+          >
+            <ion-icon name="camera-reverse" slot="start"></ion-icon>
+            ถ่ายใหม่
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Action Buttons -->
+    <div class="button-section">
+      <ion-button expand="block" fill="clear" (click)="cancel()">
+        ยกเลิก
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

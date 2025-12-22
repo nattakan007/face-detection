@@ -1,0 +1,164 @@
+<ion-card>
+  <ion-card-content>
+    <!-- Camera View -->
+    <div class="camera-wrapper">
+      <video
+        #video
+        class="camera-video"
+        [class.hidden]="!isCameraActive"
+        autoplay
+        playsinline
+      ></video>
+      <canvas #canvas class="hidden-canvas"></canvas>
+      <!-- Overlay canvas for face detection bounding box -->
+      <canvas
+        #overlayCanvas
+        class="overlay-canvas"
+        [class.hidden]="!isCameraActive"
+      ></canvas>
+
+      <!-- Camera Placeholder (before camera starts) -->
+      <div class="camera-placeholder" *ngIf="!isCameraActive && !isScanning">
+        <ion-icon name="camera" size="large"></ion-icon>
+        <p>กดปุ่ม "สแกนใบหน้า" เพื่อเริ่ม</p>
+      </div>
+
+      <!-- Camera Loading Overlay -->
+      <div
+        class="camera-overlay"
+        *ngIf="!isCameraActive && errorMessage === '' && isScanning"
+      >
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>กำลังเปิดกล้อง...</p>
+      </div>
+
+      <!-- Real-time Detection Status Badge -->
+      <div
+        class="realtime-status"
+        *ngIf="isCameraActive && isRealTimeDetecting"
+      >
+        <div
+          class="status-badge"
+          [class.detected]="realTimeDetection?.detected"
+          [class.not-detected]="!realTimeDetection?.detected"
+        >
+          <ion-icon
+            [name]="
+              realTimeDetection?.detected ? 'checkmark-circle' : 'scan-outline'
+            "
+          ></ion-icon>
+          <span *ngIf="realTimeDetection?.detected"
+            >พบใบหน้า
+            {{ (realTimeDetection.confidence * 100).toFixed(0) }}%</span
+          >
+          <span *ngIf="!realTimeDetection?.detected">หาใบหน้า...</span>
+        </div>
+      </div>
+
+      <!-- Face Detection Overlay (when processing capture) -->
+      <div class="detection-overlay" *ngIf="isScanning && isCameraActive">
+        <ion-spinner name="crescent" color="light"></ion-spinner>
+        <p>กำลังระบุตัวตน...</p>
+      </div>
+    </div>
+
+    <!-- Detection Results -->
+    <div class="detection-results" *ngIf="detectionResults || errorMessage">
+      <!-- Match Success - Green -->
+      <div class="result-item match-success" *ngIf="matchStatus === 'matched'">
+        <ion-icon name="checkmark-circle"></ion-icon>
+        <div class="result-content">
+          <span class="result-title">{{ matchedEmployeeName }}</span>
+          <span class="result-subtitle"
+            >ความเหมือน {{ matchSimilarity.toFixed(1) }}%</span
+          >
+        </div>
+      </div>
+
+      <!-- Match Error - Red -->
+      <div
+        class="result-item match-error"
+        *ngIf="matchStatus === 'not-matched'"
+      >
+        <ion-icon name="close-circle"></ion-icon>
+        <div class="result-content">
+          <span class="result-title">ไม่พบข้อมูลพนักงาน</span>
+          <span class="result-subtitle">กรุณาลงทะเบียนก่อนใช้งาน</span>
+        </div>
+      </div>
+
+      <!-- No Face - Red -->
+      <div class="result-item match-error" *ngIf="matchStatus === 'no-face'">
+        <ion-icon name="alert-circle"></ion-icon>
+        <div class="result-content">
+          <span class="result-title">ไม่พบใบหน้า</span>
+          <span class="result-subtitle">กรุณาหันหน้าเข้าหากล้อง</span>
+        </div>
+      </div>
+
+      <!-- General Results (before match attempt) -->
+      <div
+        class="result-item"
+        [class.success]="detectionResults?.detected && matchStatus === 'none'"
+        [class.error]="!detectionResults?.detected && matchStatus === 'none'"
+        *ngIf="matchStatus === 'none' && (detectionResults || errorMessage)"
+      >
+        <ion-icon
+          [name]="
+            detectionResults?.detected ? 'checkmark-circle' : 'close-circle'
+          "
+        ></ion-icon>
+        <span>{{ detectionResults?.message || errorMessage }}</span>
+      </div>
+
+      <div
+        class="confidence-bar"
+        *ngIf="detectionResults?.detected && matchStatus === 'matched'"
+      >
+        <div class="confidence-label">
+          ความแม่นยำ: {{ (detectionResults.confidence * 100).toFixed(1) }}%
+        </div>
+        <div class="progress-bar">
+          <div
+            class="progress-fill"
+            [style.width.%]="detectionResults.confidence * 100"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scan Button -->
+    <ion-button
+      expand="block"
+      size="large"
+      (click)="isPaused ? resetAndRescan() : startScanning()"
+      [disabled]="isScanning"
+      [color]="
+        matchStatus === 'matched'
+          ? 'success'
+          : matchStatus === 'not-matched' || matchStatus === 'no-face'
+          ? 'danger'
+          : realTimeDetection?.detected
+          ? 'success'
+          : 'primary'
+      "
+      class="capture-button"
+    >
+      <ion-icon
+        [name]="isPaused ? 'refresh' : isCameraActive ? 'camera' : 'scan'"
+        slot="start"
+      ></ion-icon>
+      {{
+        isScanning
+          ? "กำลังตรวจจับ..."
+          : isPaused
+          ? "สแกนใหม่"
+          : isCameraActive
+          ? realTimeDetection?.detected
+            ? "ถ่ายภาพเลย!"
+            : "รอพบใบหน้า..."
+          : "สแกนใบหน้า"
+      }}
+    </ion-button>
+  </ion-card-content>
+</ion-card>

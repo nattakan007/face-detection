@@ -1,0 +1,101 @@
+.checkin-container {
+  padding: 12px;
+}
+
+ion-card {
+  margin: 8px 0;
+}
+
+ion-card-header {
+  padding: 12px 16px;
+}
+
+ion-card-content {
+  padding: 12px 16px;
+}
+
+.name-card {
+  ion-item {
+    margin-bottom: 8px;
+    --padding-start: 0;
+    
+    ion-label {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    
+    ion-input {
+      font-size: 16px;
+      --padding-top: 8px;
+      --padding-bottom: 8px;
+    }
+  }
+}
+
+.camera-card {
+  .camera-section {
+    margin-bottom: 12px;
+  }
+
+  .photo-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .captured-photo-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .captured-photo {
+      width: 200px;
+      height: 200px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 3px solid var(--ion-color-success);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .capture-success {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 12px;
+      padding: 8px 16px;
+      background: rgba(16, 185, 129, 0.1);
+      border-radius: 20px;
+      color: var(--ion-color-success);
+      font-size: 14px;
+      font-weight: 500;
+
+      ion-icon {
+        margin-right: 8px;
+        font-size: 20px;
+      }
+    }
+  }
+
+  .retake-button {
+    margin-top: 12px;
+  }
+}
+
+.button-section {
+  margin-top: 16px;
+  
+  ion-button {
+    margin: 4px 0;
+  }
+}
+
+// Responsive
+@media (min-width: 768px) {
+  .checkin-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+}

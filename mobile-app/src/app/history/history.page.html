@@ -1,0 +1,190 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/scan"></ion-back-button>
+    </ion-buttons>
+    <ion-title>ประวัติการเช็คชื่อ</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="ionRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="ion-padding">
+    <!-- Employee Filter -->
+    <ion-card class="filter-card">
+      <ion-card-content>
+        <ion-item>
+          <ion-icon name="person" slot="start" color="primary"></ion-icon>
+          <ion-label>กรองตามพนักงาน</ion-label>
+          <ion-select
+            [(ngModel)]="selectedEmployeeId"
+            (ionChange)="onEmployeeFilterChange($event)"
+            interface="popover"
+            placeholder="เลือกพนักงาน"
+          >
+            <ion-select-option value="all">ทั้งหมด</ion-select-option>
+            <ion-select-option *ngFor="let emp of employees" [value]="emp.id">
+              {{ emp.name }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Today's Records -->
+    <ion-card *ngIf="todayRecords.length > 0">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="today" color="primary"></ion-icon>
+          วันนี้
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let record of todayRecords" lines="full">
+            <ion-thumbnail
+              slot="start"
+              *ngIf="record.photoDataUrl"
+              style="--size: 56px; --border-radius: 8px"
+            >
+              <img [src]="record.photoDataUrl" alt="รูปถ่าย" />
+            </ion-thumbnail>
+            <ion-icon
+              *ngIf="!record.photoDataUrl"
+              [name]="getRecordIcon(record.type)"
+              slot="start"
+              [color]="getRecordColor(record.type)"
+              size="large"
+            ></ion-icon>
+            <ion-label>
+              <h2
+                style="font-weight: 600"
+                *ngIf="!record.employeeId?.startsWith('MANUAL-')"
+              >
+                {{ record.employeeName || 'ไม่ระบุชื่อ' }}
+              </h2>
+              <h2
+                style="font-weight: 600; color: #888"
+                *ngIf="record.employeeId?.startsWith('MANUAL-')"
+              >
+                {{ record.employeeName || 'เช็คชื่อด้วยตนเอง' }}
+              </h2>
+              <p>{{ getRecordTitle(record.type) }} - {{ record.time }}</p>
+              <p
+                *ngIf="record.employeeDepartment && !record.employeeId?.startsWith('MANUAL-')"
+                style="color: #888; font-size: 12px"
+              >
+                {{ record.employeeDepartment }}
+              </p>
+              <p
+                *ngIf="record.confidence"
+                style="color: #10b981; font-size: 12px"
+              >
+                ความแม่นยำ: {{ (record.confidence * 100).toFixed(1) }}%
+              </p>
+            </ion-label>
+            <div slot="end" style="text-align: right">
+              <ion-badge
+                [color]="getRecordColor(record.type)"
+                style="margin-bottom: 4px"
+              >
+                {{ record.type === 'check-in' ? 'เข้า' : 'ออก' }}
+              </ion-badge>
+              <div style="font-size: 10px; color: #888; margin-top: 2px">
+                {{ getStatusLabel(record) }}
+              </div>
+            </div>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- All Records -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="time" color="medium"></ion-icon>
+          ประวัติทั้งหมด ({{ filteredRecords.length }} รายการ)
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item
+            *ngFor="let record of filteredRecords; trackBy: trackByDate"
+            lines="full"
+          >
+            <ion-thumbnail
+              slot="start"
+              *ngIf="record.photoDataUrl"
+              style="--size: 56px; --border-radius: 8px"
+            >
+              <img [src]="record.photoDataUrl" alt="รูปถ่าย" />
+            </ion-thumbnail>
+            <ion-icon
+              *ngIf="!record.photoDataUrl"
+              [name]="getRecordIcon(record.type)"
+              slot="start"
+              [color]="getRecordColor(record.type)"
+            ></ion-icon>
+            <ion-label>
+              <h2
+                style="font-weight: 600"
+                *ngIf="!record.employeeId?.startsWith('MANUAL-')"
+              >
+                {{ record.employeeName || 'ไม่ระบุชื่อ' }}
+              </h2>
+              <h2
+                style="font-weight: 600; color: #888"
+                *ngIf="record.employeeId?.startsWith('MANUAL-')"
+              >
+                {{ record.employeeName || 'เช็คชื่อด้วยตนเอง' }}
+              </h2>
+              <h3>{{ record.date }} - {{ record.time }}</h3>
+              <p>{{ getRecordTitle(record.type) }}</p>
+              <p
+                *ngIf="record.employeeDepartment && !record.employeeId?.startsWith('MANUAL-')"
+                style="color: #888; font-size: 12px"
+              >
+                {{ record.employeeDepartment }}
+              </p>
+              <p
+                *ngIf="record.confidence"
+                style="color: #10b981; font-size: 12px"
+              >
+                ความแม่นยำ: {{ (record.confidence * 100).toFixed(1) }}%
+              </p>
+              <p *ngIf="!record.synced" style="color: #f59e0b; font-size: 12px">
+                <ion-icon name="cloud-offline"></ion-icon> ยังไม่ซิงค์
+              </p>
+            </ion-label>
+            <div slot="end" style="text-align: right">
+              <ion-badge
+                [color]="getRecordColor(record.type)"
+                style="margin-bottom: 4px"
+              >
+                {{ record.type === 'check-in' ? 'เข้า' : 'ออก' }}
+              </ion-badge>
+              <div style="font-size: 10px; color: #888; margin-top: 2px">
+                {{ getStatusLabel(record) }}
+              </div>
+            </div>
+          </ion-item>
+
+          <ion-item *ngIf="filteredRecords.length === 0">
+            <ion-label class="ion-text-center">
+              <ion-icon
+                name="document-text-outline"
+                style="font-size: 48px; color: #ccc"
+              ></ion-icon>
+              <h2>ไม่มีข้อมูลการเช็คชื่อ</h2>
+              <p>เริ่มเช็คชื่อเพื่อบันทึกประวัติ</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

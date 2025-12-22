@@ -1,0 +1,7 @@
+{
+  "name": "face-attendance-mobile",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

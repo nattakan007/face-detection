@@ -1,0 +1,220 @@
+.register-container {
+  padding: 8px;
+}
+
+/* Responsive Design for Register Page */
+@media (max-width: 480px) {
+  .register-container {
+    padding: 5px;
+  }
+}
+
+@media (min-width: 768px) {
+  .register-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .register-container {
+    max-width: 800px;
+    padding: 24px;
+  }
+}
+
+ion-card {
+  --ion-background-color: #ffffff;
+  margin: 8px 0;
+}
+
+ion-card-header {
+  --ion-background-color: #ffffff !important;
+  background: #ffffff !important;
+  padding: 12px 16px;
+}
+
+ion-card-content {
+  --ion-background-color: #ffffff !important;
+  background: #ffffff !important;
+  padding: 12px 16px;
+}
+
+.photo-card {
+  margin-bottom: 12px;
+
+  .photo-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .photo-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
+    height: 200px;
+    border: 2px dashed var(--ion-color-medium);
+    border-radius: 12px;
+    background-color: var(--ion-color-light);
+
+    ion-icon {
+      color: var(--ion-color-medium);
+      margin-bottom: 8px;
+    }
+
+    p {
+      color: var(--ion-color-medium);
+      margin: 0;
+      font-size: 14px;
+    }
+  }
+
+  .captured-photo-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .capture-success {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 12px;
+      padding: 8px 16px;
+      background: rgba(16, 185, 129, 0.1);
+      border-radius: 20px;
+      color: var(--ion-color-success);
+      font-size: 14px;
+      font-weight: 500;
+
+      ion-icon {
+        margin-right: 8px;
+        font-size: 20px;
+      }
+    }
+  }
+
+  .profile-photo {
+    width: 200px;
+    height: 200px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 3px solid var(--ion-color-success);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  }
+
+  .retake-button {
+    margin-top: 12px;
+  }
+}
+
+.form-card {
+  margin-bottom: 16px;
+
+  ion-item {
+    margin-bottom: 4px;
+    --padding-start: 0;
+    --padding-end: 0;
+    --inner-padding-end: 0;
+
+    ion-label {
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    ion-input, ion-select {
+      font-size: 16px;
+      --padding-top: 8px;
+      --padding-bottom: 8px;
+    }
+
+    ion-note {
+      font-size: 12px;
+    }
+  }
+}
+
+.button-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  ion-button {
+    --padding-top: 12px;
+    --padding-bottom: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 4px 0;
+  }
+}
+
+/* Mobile specific adjustments */
+@media (max-height: 700px) {
+  .photo-preview {
+    width: 160px !important;
+    height: 160px !important;
+  }
+
+  .profile-photo {
+    width: 160px !important;
+    height: 160px !important;
+  }
+
+  ion-card-header {
+    padding: 8px 12px;
+
+    ion-card-title {
+      font-size: 16px;
+    }
+
+    ion-card-subtitle {
+      font-size: 12px;
+    }
+  }
+
+  ion-card-content {
+    padding: 8px 12px;
+  }
+
+  .button-section ion-button {
+    --padding-top: 10px;
+    --padding-bottom: 10px;
+    font-size: 14px;
+  }
+}
+
+// Home page register section styling
+.register-section {
+  margin-top: 20px;
+
+  ion-card {
+    background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-secondary));
+
+    ion-card-content {
+      color: white;
+      text-align: center;
+
+      h4 {
+        margin: 0 0 8px 0;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      p {
+        margin: 0 0 16px 0;
+        opacity: 0.9;
+      }
+
+      ion-button {
+        --background: white;
+        --color: var(--ion-color-primary);
+        font-weight: 600;
+      }
+    }
+  }
+}

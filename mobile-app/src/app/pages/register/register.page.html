@@ -1,0 +1,156 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/scan"></ion-back-button>
+    </ion-buttons>
+    <ion-title>ลงทะเบียนใบหน้า</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="register-container">
+    <!-- Profile Photo Section with Live Camera -->
+    <ion-card class="photo-card">
+      <ion-card-header>
+        <ion-card-title
+          >ถ่ายรูปโปรไฟล์ <span style="color: #ef4444">*</span></ion-card-title
+        >
+        <ion-card-subtitle>
+          {{ profilePhoto ? 'ถ่ายรูปสำเร็จ! กรุณากรอกข้อมูลด้านล่าง' :
+          'กล้องจะถ่ายอัตโนมัติเมื่อพบใบหน้าชัดเจน' }}
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <!-- Show Live Camera when no photo taken -->
+        <div class="photo-section" *ngIf="!profilePhoto">
+          <app-live-camera
+            mode="register"
+            (onFaceDetected)="onFaceAutoCapture($event)"
+            (onCapture)="onPhotoCaptured($event)"
+            #liveCamera
+          >
+          </app-live-camera>
+        </div>
+
+        <!-- Show captured photo -->
+        <div class="photo-section" *ngIf="profilePhoto">
+          <div class="captured-photo-container">
+            <img [src]="profilePhoto" alt="Profile" class="profile-photo" />
+            <div class="capture-success" *ngIf="!isDuplicateFace">
+              <ion-icon name="checkmark-circle" color="success"></ion-icon>
+              <span>บันทึกใบหน้าแล้ว ({{ capturedConfidence }}%)</span>
+            </div>
+            <div
+              class="capture-warning"
+              *ngIf="isDuplicateFace"
+              style="
+                color: #ef4444;
+                background: #fef2f2;
+                padding: 8px;
+                border-radius: 8px;
+                margin-top: 8px;
+                text-align: center;
+              "
+            >
+              <ion-icon name="warning-outline" color="danger"></ion-icon>
+              <span>ใบหน้านี้ถูกลงทะเบียนแล้ว กรุณาถ่ายใหม่</span>
+            </div>
+          </div>
+          <ion-button
+            fill="outline"
+            size="small"
+            (click)="retakePhoto()"
+            class="retake-button"
+          >
+            <ion-icon name="camera-reverse" slot="start"></ion-icon>
+            ถ่ายใหม่
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- User Information Form -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-title>ข้อมูลส่วนตัว</ion-card-title>
+        <ion-card-subtitle style="color: #ef4444; font-size: 0.85rem">
+          <ion-icon name="alert-circle-outline"></ion-icon>
+          ข้อมูลที่จำเป็น: ชื่อ-นามสกุล, รูปถ่ายใบหน้า
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <form #registrationForm="ngForm">
+          <ion-item>
+            <ion-label position="stacked"
+              >ชื่อ-นามสกุล <span style="color: #ef4444">*</span></ion-label
+            >
+            <ion-input
+              type="text"
+              name="fullName"
+              [(ngModel)]="user.fullName"
+              placeholder="กรุณากรอกชื่อและนามสกุล"
+              required
+            >
+            </ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">รหัสพนักงาน</ion-label>
+            <ion-input
+              type="text"
+              [value]="generatedEmployeeId"
+              readonly
+              color="medium"
+            >
+            </ion-input>
+            <ion-note slot="helper">รหัสพนักงานจะถูกสร้างอัตโนมัติ</ion-note>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">อีเมล</ion-label>
+            <ion-input type="email" name="email" [(ngModel)]="user.email">
+            </ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">แผนก</ion-label>
+            <ion-select
+              name="department"
+              [(ngModel)]="user.department"
+              placeholder="เลือกแผนก"
+            >
+              <ion-select-option value="ฝ่ายขาย">ฝ่ายขาย</ion-select-option>
+              <ion-select-option value="ฝ่ายการตลาด"
+                >ฝ่ายการตลาด</ion-select-option
+              >
+              <ion-select-option value="ฝ่ายบุคคล">ฝ่ายบุคคล</ion-select-option>
+              <ion-select-option value="ฝ่ายการเงิน"
+                >ฝ่ายการเงิน</ion-select-option
+              >
+              <ion-select-option value="ฝ่ายไอที">ฝ่ายไอที</ion-select-option>
+              <ion-select-option value="ฝ่ายผลิต">ฝ่ายผลิต</ion-select-option>
+              <ion-select-option value="อื่นๆ">อื่นๆ</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </form>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Action Buttons -->
+    <div class="button-section">
+      <ion-button
+        expand="block"
+        size="large"
+        (click)="register()"
+        [disabled]="!canRegister() || isProcessing"
+      >
+        <ion-icon name="checkmark-circle" slot="start"></ion-icon>
+        ลงทะเบียน
+      </ion-button>
+
+      <ion-button expand="block" fill="clear" (click)="cancel()">
+        ยกเลิก
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

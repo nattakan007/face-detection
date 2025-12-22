@@ -1,0 +1,95 @@
+<ion-content [fullscreen]="true">
+  <!-- Floating Menu Button -->
+  <div style="position: fixed; top: 20px; right: 20px; z-index: 999">
+    <ion-button
+      (click)="presentMenu($event)"
+      fill="clear"
+      color="medium"
+      size="small"
+    >
+      ⋮
+    </ion-button>
+  </div>
+
+  <div class="scan-container">
+    <!-- Banner Section -->
+    <div class="banner-section">
+      <div class="banner-content">
+        <div class="banner-text">
+          <h1>SAILOR BAR & RESTAURANT</h1>
+          <p>ระบบลงทะเบียนเข้า-ออกงานด้วยใบหน้า</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-wrapper">
+      <!-- Camera Section -->
+      <div class="camera-section">
+        <!-- Live Camera Component -->
+        <app-live-camera
+          (onFaceDetected)="onFaceDetected($event)"
+          (onCapture)="onPhotoCaptured($event)"
+        >
+        </app-live-camera>
+
+        <!-- Action Buttons Card -->
+        <div class="action-buttons-container">
+          <!-- 2x2 Grid Buttons -->
+          <div class="buttons-grid">
+            <!-- Row 1 -->
+            <ion-button
+              expand="block"
+              (click)="startManualCheckIn()"
+              class="grid-button primary-button"
+            >
+              <ion-icon
+                name="hand-right-outline"
+                style="font-size: 20px; margin-right: 6px"
+              ></ion-icon>
+              <span>เข้างานด้วยตัวเอง</span>
+            </ion-button>
+
+            <ion-button
+              expand="block"
+              (click)="goToRegister()"
+              class="grid-button register-button"
+            >
+              <ion-icon
+                name="person-add-outline"
+                style="font-size: 20px; margin-right: 6px"
+              ></ion-icon>
+              <span>ลงทะเบียน</span>
+            </ion-button>
+
+            <!-- Row 2 -->
+            <ion-button
+              expand="block"
+              routerLink="/employees"
+              class="grid-button employees-button"
+            >
+              <ion-icon
+                name="people-outline"
+                style="font-size: 20px; margin-right: 6px"
+              ></ion-icon>
+              <span>รายชื่อพนักงาน</span>
+            </ion-button>
+
+            <ion-button
+              expand="block"
+              routerLink="/history"
+              class="grid-button history-button"
+            >
+              <ion-icon
+                name="document-text-outline"
+                style="font-size: 20px; margin-right: 6px"
+              ></ion-icon>
+              <span>ประวัติ</span>
+            </ion-button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Close content-wrapper -->
+  </div>
+  <!-- Close scan-container -->
+</ion-content>

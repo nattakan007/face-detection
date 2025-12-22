@@ -1,0 +1,90 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/scan"></ion-back-button>
+    </ion-buttons>
+    <ion-title>รายชื่อพนักงาน</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">รายชื่อพนักงาน</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="employees-container">
+    <!-- Stats Card -->
+    <ion-card class="stats-card">
+      <ion-card-content>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-number">{{ employees.length }}</div>
+            <div class="stat-label">พนักงานทั้งหมด</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">{{ employeesWithPhoto() }}</div>
+            <div class="stat-label">มีรูปโปรไฟล์</div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Employee List -->
+    <ion-card *ngIf="!isLoading && employees.length > 0" class="employees-list">
+      <ion-card-header>
+        <ion-card-title>รายชื่อพนักงานที่ลงทะเบียน</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item *ngFor="let employee of employees">
+            <ion-avatar slot="start">
+              <img [src]="employee.photoPath || 'assets/images/default-avatar.svg'" [alt]="employee.name" />
+            </ion-avatar>
+            <ion-label>
+              <h2>{{ employee.name }}</h2>
+              <p>{{ employee.employeeId }}</p>
+              <p>{{ employee.department }} • {{ employee.email }}</p>
+            </ion-label>
+            <ion-note slot="end" color="medium">
+              <p>{{ formatDate(employee.createdAt) }}</p>
+              <ion-badge *ngIf="employee.photoPath" color="success">
+                <ion-icon name="checkmark-circle"></ion-icon>
+              </ion-badge>
+            </ion-note>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && employees.length === 0" class="empty-state">
+      <ion-card>
+        <ion-card-content class="ion-text-center ion-padding">
+          <ion-icon name="people-outline" size="large" color="medium"></ion-icon>
+          <h2 color="medium">ยังไม่มีพนักงานในระบบ</h2>
+          <p color="medium">กรุณาลงทะเบียนพนักงานเพื่อเริ่มใช้งานระบบ</p>
+          <ion-button fill="clear" routerLink="/register">
+            <ion-icon name="person-add" slot="start"></ion-icon>
+            ลงทะเบียนพนักงานใหม่
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+      <ion-card>
+        <ion-card-content class="ion-text-center ion-padding">
+          <ion-spinner name="crescent"></ion-spinner>
+          <p>กำลังโหลดข้อมูล...</p>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+</ion-content>

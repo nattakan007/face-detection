@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Capacitor
+android/
+ios/
+electron/
+
+# Compiled output
+/dist
+/www
+/build
+
+# Ionic
+capacitor.config.ts
+capacitor.config.json
+
+# Other
+.thumbnails/
+.DS_Store

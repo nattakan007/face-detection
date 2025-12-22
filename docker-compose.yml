@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: face-attendance-db
+    environment:
+      POSTGRES_DB: face_attendance_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - face-attendance-network
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: face-attendance-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - face-attendance-network
+
+  # API Server
+  api-server:
+    build:
+      context: ./api-server
+      dockerfile: Dockerfile
+    container_name: face-attendance-api
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: face_attendance_dev
+      DB_USER: postgres
+      DB_PASSWORD: password
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./api-server:/app
+      - /app/node_modules
+    networks:
+      - face-attendance-network
+
+  # Web Dashboard
+  web-dashboard:
+    build:
+      context: ./web-dashboard
+      dockerfile: Dockerfile
+    container_name: face-attendance-web
+    ports:
+      - "4200:4200"
+    depends_on:
+      - api-server
+    volumes:
+      - ./web-dashboard:/app
+      - /app/node_modules
+    networks:
+      - face-attendance-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  face-attendance-network:
+    driver: bridge

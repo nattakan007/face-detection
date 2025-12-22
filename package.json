@@ -1,0 +1,25 @@
+{
+  "name": "face-attendance-system",
+  "version": "1.0.0",
+  "description": "Face Attendance System with Mobile App, API, and Web Dashboard",
+  "scripts": {
+    "install:all": "npm run install:mobile && npm run install:api && npm run install:web",
+    "install:mobile": "cd mobile-app && npm install",
+    "install:api": "cd api-server && npm install",
+    "install:web": "cd web-dashboard && npm install",
+    "dev:mobile": "cd mobile-app && ionic serve",
+    "dev:api": "cd api-server && npm run start:dev",
+    "dev:web": "cd web-dashboard && ng serve",
+    "build:all": "npm run build:mobile && npm run build:api && npm run build:web",
+    "build:mobile": "cd mobile-app && ionic build",
+    "build:api": "cd api-server && npm run build",
+    "build:web": "cd web-dashboard && ng build",
+    "test:all": "npm run test:mobile && npm run test:api && npm run test:web"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "dependencies": {
+    "mssql": "^12.2.0"
+  }
+}

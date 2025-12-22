@@ -1,0 +1,137 @@
+<ion-header class="header-background">
+  <ion-toolbar>
+    <ion-title class="title-text">Face Attendance</ion-title>
+    <ion-icon name="notifications-outline" slot="end" (click)="showNotifications()"></ion-icon>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="home-content" [fullscreen]="true">
+  <!-- User Profile Section -->
+  <div class="profile-section">
+    <div class="profile-card">
+      <div class="profile-image">
+        <img src="assets/images/default-avatar.svg" alt="Profile" *ngIf="!userProfile?.photoPath">
+        <img [src]="userProfile?.photoPath" alt="Profile" *ngIf="userProfile?.photoPath">
+      </div>
+      <div class="profile-info">
+        <h2>{{ userProfile?.firstName || userProfile?.name?.split(' ')[0] || 'First' }} {{ userProfile?.lastName || userProfile?.name?.split(' ')[1] || 'Last' }}</h2>
+        <p class="employee-id">Employee ID: {{ userProfile?.employeeId || 'EMP001' }}</p>
+        <p class="department">{{ userProfile?.department || 'Information Technology' }}</p>
+      </div>
+      <ion-icon name="chevron-forward" class="profile-arrow"></ion-icon>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="stats-section">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <ion-icon name="calendar-outline"></ion-icon>
+        </div>
+        <div class="stat-info">
+          <h3>{{ todayStats?.workDays || '22' }}</h3>
+          <p>Work Days</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+        </div>
+        <div class="stat-info">
+          <h3>{{ todayStats?.present || '18' }}</h3>
+          <p>Present</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">
+          <ion-icon name="time-outline"></ion-icon>
+        </div>
+        <div class="stat-info">
+          <h3>{{ todayStats?.late || '2' }}</h3>
+          <p>Late</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Today's Status -->
+  <div class="today-section">
+    <h3 class="section-title">Today's Status</h3>
+    <ion-card class="status-card">
+      <ion-card-content>
+        <div class="status-row">
+          <div class="status-icon-container">
+            <ion-icon name="log-in-outline" class="status-icon checkin"></ion-icon>
+          </div>
+          <div class="status-info">
+            <h4>Check In</h4>
+            <p class="status-time">{{ todayAttendance?.checkIn || '08:45 AM' }}</p>
+            <p class="status-location">📍 Office</p>
+          </div>
+          <ion-badge color="success" *ngIf="todayAttendance?.checkIn">Completed</ion-badge>
+          <ion-badge color="medium" *ngIf="!todayAttendance?.checkIn">Pending</ion-badge>
+        </div>
+
+        <div class="status-divider"></div>
+
+        <div class="status-row">
+          <div class="status-icon-container">
+            <ion-icon name="log-out-outline" class="status-icon checkout"></ion-icon>
+          </div>
+          <div class="status-info">
+            <h4>Check Out</h4>
+            <p class="status-time">{{ todayAttendance?.checkOut || '--:--' }}</p>
+            <p class="status-location" *ngIf="todayAttendance?.checkOut">📍 Office</p>
+          </div>
+          <ion-badge color="success" *ngIf="todayAttendance?.checkOut">Completed</ion-badge>
+          <ion-badge color="medium" *ngIf="!todayAttendance?.checkOut">Pending</ion-badge>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="actions-section">
+    <h3 class="section-title">Quick Actions</h3>
+    <div class="actions-grid">
+      <ion-button class="action-button primary" (click)="navigateTo('/tabs/scan')">
+        <ion-icon name="camera" size="large"></ion-icon>
+        <p>Check In/Out</p>
+      </ion-button>
+
+      <ion-button class="action-button secondary" (click)="navigateTo('/tabs/history')">
+        <ion-icon name="time" size="large"></ion-icon>
+        <p>History</p>
+      </ion-button>
+    </div>
+
+    <div class="register-section" *ngIf="!userProfile">
+      <ion-card>
+        <ion-card-content>
+          <h4>ยังไม่ได้ลงทะเบียน?</h4>
+          <p>ลงทะเบียนเพื่อเริ่มใช้ระบบเช็คชื่อด้วยใบหน้า</p>
+          <ion-button expand="block" fill="outline" (click)="navigateTo('/register')">
+            <ion-icon name="person-add" slot="start"></ion-icon>
+            ลงทะเบียนใบหน้า
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+
+  <!-- Recent Activities -->
+  <div class="recent-section" *ngIf="recentActivities?.length">
+    <h3 class="section-title">Recent Activities</h3>
+    <ion-list class="activity-list">
+      <ion-item *ngFor="let activity of recentActivities; trackBy: trackById">
+        <ion-icon [name]="activity.icon" slot="start"></ion-icon>
+        <ion-label>
+          <h2>{{ activity.title }}</h2>
+          <p>{{ activity.time }}</p>
+        </ion-label>
+        <ion-badge [color]="activity.color">{{ activity.status }}</ion-badge>
+      </ion-item>
+    </ion-list>
+  </div>
+</ion-content>

@@ -1,0 +1,25 @@
+<ion-content>
+  <ion-list>
+    <ion-item (click)="onRefreshFromApi()" [disabled]="isLoading">
+      <ion-label>
+        <h2>อัปเดตจากเซิร์ฟเวอร์</h2>
+        <p>{{ isLoading ? 'กำลังอัปเดต...' : 'ดึงข้อมูลตารางเวลาล่าสุด' }}</p>
+      </ion-label>
+      <ion-spinner *ngIf="isLoading" slot="end" color="primary"></ion-spinner>
+    </ion-item>
+
+    <ion-item (click)="closePopover()">
+      <ion-label>
+        <h2>ข้อมูลระบบ</h2>
+        <p>{{ isOfflineMode ? 'โหมดออฟไลน์: 8:00-17:00' : 'โหมดออนไลน์: ดึงจากเซิร์ฟเวอร์' }}</p>
+      </ion-label>
+    </ion-item>
+
+    <ion-item (click)="closePopover()">
+      <ion-label>
+        <h2>ความช่วยเหลือ</h2>
+        <p>ดูคู่มือการใช้งาน</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>
