@@ -5,7 +5,7 @@
 | Layer | Technology |
 |-------|-----------|
 | Framework | Ionic 8 + Angular 18 |
-| Native | Capacitor 6 |
+| Native | Capacitor 8 |
 | Storage | Ionic Storage (IndexedDB) |
 | Face AI | @vladmandic/face-api@1.7.15 |
 | Language | TypeScript 5.x |

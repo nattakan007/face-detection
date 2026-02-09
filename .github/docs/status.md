@@ -7,7 +7,7 @@
 - ✅ Core UI: check-in/out, history, manual check-in, registration
 - ✅ IndexedDB offline-first storage
 - ✅ Face recognition (@vladmandic/face-api@1.7.15)
-- ✅ Auto-capture at 98% confidence + duplicate prevention
+- ✅ Auto-capture at 90% confidence + duplicate prevention
 - ✅ Face matching (0.6 threshold) + duplicate face detection in registration
 - ✅ Employee name display in attendance history
 - ✅ UX: required fields, camera stop after scan, scan mode popup fix

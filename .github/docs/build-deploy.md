@@ -5,7 +5,7 @@
 ```bash
 cd mobile-app
 ionic serve                           # Dev server → http://localhost:8100
-START-DEV.bat                         # Dev server + auto-build APK (every 10 min)
+start-dev.bat                         # Dev server + auto-build APK (every 10 min)
 ```
 
 ## Android APK

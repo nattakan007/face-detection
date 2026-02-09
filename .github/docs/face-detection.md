@@ -16,6 +16,8 @@
 | Stable frames | 3 frames | ~0.6s face must be still |
 | Center tolerance | 100px | Face position from center |
 | Movement threshold | 20px | Max allowed movement |
+| No face timeout | 3s | Return to home if no face detected |
+| Scan timeout | 30s | Max time for scan session |
 
 ## Camera Rules
 
@@ -29,7 +31,7 @@
 ```
 1. startCamera() → open front camera
 2. startRealTimeDetection() → detect face every 200ms
-3. Face detected + centered + stable → auto-capture at 98% confidence
+3. Face detected + centered + stable → auto-capture at 90% confidence
 4. capturePhoto() → detectFace(image) → identifyFace(descriptor)
 5. Match found → emit onFaceDetected → parent navigates
 6. No match → emit onMatchError → parent navigates
