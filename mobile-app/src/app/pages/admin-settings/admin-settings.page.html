@@ -1,0 +1,688 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>ตั้งค่าระบบ (Admin)</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="saveSettings()" [disabled]="!hasUnsavedChanges">
+        <ion-icon name="save" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Segment Tabs -->
+  <ion-toolbar>
+    <ion-segment [(ngModel)]="selectedSegment" scrollable>
+      <ion-segment-button value="face">
+        <ion-label>ใบหน้า</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="schedule">
+        <ion-label>ตารางเวลา</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="shifts">
+        <ion-label>กะทำงาน</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="attendance">
+        <ion-label>การเข้างาน</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="advanced">
+        <ion-label>ขั้นสูง</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="data">
+        <ion-label>ข้อมูล</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" *ngIf="settings">
+  <!-- Face Detection Settings -->
+  <div *ngIf="selectedSegment === 'face'" class="settings-section">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>การตรวจจับและเปรียบเทียบใบหน้า</ion-card-title>
+        <ion-card-subtitle
+          >ปรับค่าความแม่นยำในการตรวจจับและเปรียบเทียบใบหน้า</ion-card-subtitle
+        >
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Preset Buttons -->
+        <ion-row class="preset-buttons">
+          <ion-col size="4">
+            <ion-button
+              expand="block"
+              size="small"
+              fill="outline"
+              (click)="loadPreset('strict')"
+            >
+              <ion-icon name="shield-checkmark" slot="start"></ion-icon>
+              เข้มงวด
+            </ion-button>
+          </ion-col>
+          <ion-col size="4">
+            <ion-button
+              expand="block"
+              size="small"
+              fill="outline"
+              (click)="loadPreset('balanced')"
+            >
+              <ion-icon name="radio-button-on" slot="start"></ion-icon>
+              ปานกลาง
+            </ion-button>
+          </ion-col>
+          <ion-col size="4">
+            <ion-button
+              expand="block"
+              size="small"
+              fill="outline"
+              (click)="loadPreset('lenient')"
+            >
+              <ion-icon name="happy" slot="start"></ion-icon>
+              ยืดหยุ่น
+            </ion-button>
+          </ion-col>
+        </ion-row>
+
+        <!-- Min Confidence -->
+        <ion-item lines="full">
+          <ion-label position="stacked">
+            ความแม่นยำขั้นต่ำ (ทั่วไป)
+            <p>{{ formatPercent(settings.faceDetection.minConfidence) }}</p>
+          </ion-label>
+          <ion-range
+            [(ngModel)]="settings.faceDetection.minConfidence"
+            min="0.65"
+            max="1.0"
+            step="0.05"
+            pin="true"
+            (ionChange)="onSettingChange()"
+          >
+            <ion-label slot="start">65%</ion-label>
+            <ion-label slot="end">100%</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <!-- Min Similarity -->
+        <ion-item lines="full">
+          <ion-label position="stacked">
+            ความคล้ายคลึงขั้นต่ำ (เปรียบเทียบ)
+            <p>
+              {{ formatPercent(settings.faceDetection.minSimilarityPercent) }}
+            </p>
+          </ion-label>
+          <ion-range
+            [(ngModel)]="settings.faceDetection.minSimilarityPercent"
+            min="0.65"
+            max="1.0"
+            step="0.05"
+            pin="true"
+            (ionChange)="onSettingChange()"
+          >
+            <ion-label slot="start">65%</ion-label>
+            <ion-label slot="end">100%</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <!-- Registration Confidence -->
+        <ion-item lines="full">
+          <ion-label position="stacked">
+            ความแม่นยำการลงทะเบียน
+            <p>
+              {{ formatPercent(settings.faceDetection.registrationMinConfidence)
+              }}
+            </p>
+          </ion-label>
+          <ion-range
+            [(ngModel)]="settings.faceDetection.registrationMinConfidence"
+            min="0.65"
+            max="1.0"
+            step="0.05"
+            pin="true"
+            (ionChange)="onSettingChange()"
+          >
+            <ion-label slot="start">65%</ion-label>
+            <ion-label slot="end">100%</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <!-- Auto-Capture Scan -->
+        <ion-item lines="full">
+          <ion-label position="stacked">
+            ถ่ายอัตโนมัติ (สแกนเข้างาน)
+            <p>
+              {{ formatPercent(settings.faceDetection.autoCaptureThresholdScan)
+              }}
+            </p>
+          </ion-label>
+          <ion-range
+            [(ngModel)]="settings.faceDetection.autoCaptureThresholdScan"
+            min="0.80"
+            max="1.0"
+            step="0.01"
+            pin="true"
+            (ionChange)="onSettingChange()"
+          >
+            <ion-label slot="start">80%</ion-label>
+            <ion-label slot="end">100%</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <!-- Scan Timeout -->
+        <ion-item lines="full">
+          <ion-label position="stacked">
+            ระยะเวลาสแกนสูงสุด
+            <p>{{ formatDuration(settings.faceDetection.scanTimeout) }}</p>
+          </ion-label>
+          <ion-range
+            [(ngModel)]="settings.faceDetection.scanTimeout"
+            min="10000"
+            max="60000"
+            step="5000"
+            pin="true"
+            (ionChange)="onSettingChange()"
+          >
+            <ion-label slot="start">10s</ion-label>
+            <ion-label slot="end">60s</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <!-- Auto-Capture Cooldown -->
+        <ion-item lines="none">
+          <ion-label position="stacked">
+            ระยะห่างการถ่ายภาพ
+            <p>
+              {{ formatDuration(settings.faceDetection.autoCaptureCooldown) }}
+            </p>
+          </ion-label>
+          <ion-range
+            [(ngModel)]="settings.faceDetection.autoCaptureCooldown"
+            min="1000"
+            max="10000"
+            step="1000"
+            pin="true"
+            (ionChange)="onSettingChange()"
+          >
+            <ion-label slot="start">1s</ion-label>
+            <ion-label slot="end">10s</ion-label>
+          </ion-range>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Schedule Settings -->
+  <div *ngIf="selectedSegment === 'schedule'" class="settings-section">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>ตารางเวลาทำงาน</ion-card-title>
+        <ion-card-subtitle>กำหนดเวลาเข้างาน-ออกงาน</ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <ion-item lines="full">
+          <ion-label position="stacked">เวลาเข้างาน</ion-label>
+          <ion-datetime-button datetime="checkInTime"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime
+                id="checkInTime"
+                presentation="time"
+                [(ngModel)]="settings.schedule.checkInTime"
+                (ionChange)="onSettingChange()"
+              >
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+
+        <ion-item lines="full">
+          <ion-label position="stacked">เวลาออกงาน</ion-label>
+          <ion-datetime-button datetime="checkOutTime"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime
+                id="checkOutTime"
+                presentation="time"
+                [(ngModel)]="settings.schedule.checkOutTime"
+                (ionChange)="onSettingChange()"
+              >
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+
+        <ion-item lines="full">
+          <ion-label position="stacked">เวลาสาย</ion-label>
+          <ion-datetime-button datetime="lateTime"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime
+                id="lateTime"
+                presentation="time"
+                [(ngModel)]="settings.schedule.lateTime"
+                (ionChange)="onSettingChange()"
+              >
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-label position="stacked">เวลาขาดงาน</ion-label>
+          <ion-datetime-button datetime="absentTime"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime
+                id="absentTime"
+                presentation="time"
+                [(ngModel)]="settings.schedule.absentTime"
+                (ionChange)="onSettingChange()"
+              >
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Work Shifts Settings -->
+  <div *ngIf="selectedSegment === 'shifts'" class="settings-section">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>กะเวลาทำงาน</ion-card-title>
+        <ion-card-subtitle>จัดการกะทำงาน (เช้า, บ่าย, ดึก)</ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Enable Shifts -->
+        <ion-item lines="full">
+          <ion-label>เปิดใช้งานระบบกะ</ion-label>
+          <ion-toggle
+            [(ngModel)]="settings.workShifts.enabled"
+            (ionChange)="onSettingChange()"
+          >
+          </ion-toggle>
+        </ion-item>
+
+        <!-- Shifts List -->
+        <div *ngIf="settings.workShifts.enabled">
+          <ion-list-header>
+            <ion-label>รายการกะทำงาน</ion-label>
+            <ion-button size="small" (click)="addShift()">
+              <ion-icon name="add" slot="start"></ion-icon>
+              เพิ่มกะ
+            </ion-button>
+          </ion-list-header>
+
+          <ion-item
+            *ngFor="let shift of settings.workShifts.shifts; let i = index"
+            lines="full"
+          >
+            <ion-label>
+              <h3>{{ shift.name }}</h3>
+              <p>{{ shift.startTime }} - {{ shift.endTime }}</p>
+            </ion-label>
+            <ion-toggle
+              slot="end"
+              [(ngModel)]="shift.isActive"
+              (ionChange)="toggleShift(shift)"
+            >
+            </ion-toggle>
+            <ion-button slot="end" fill="clear" (click)="editShift(shift, i)">
+              <ion-icon name="create" slot="icon-only"></ion-icon>
+            </ion-button>
+            <ion-button
+              slot="end"
+              fill="clear"
+              color="danger"
+              (click)="deleteShift(i)"
+            >
+              <ion-icon name="trash" slot="icon-only"></ion-icon>
+            </ion-button>
+          </ion-item>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Attendance Settings -->
+  <div *ngIf="selectedSegment === 'attendance'" class="settings-section">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>การบันทึกเข้างาน</ion-card-title>
+        <ion-card-subtitle>กำหนดกฎการเข้างาน-ออกงาน</ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Duplicate Prevention -->
+        <ion-item lines="full">
+          <ion-label position="stacked">
+            ป้องกันเข้างานซ้ำ
+            <p>
+              {{ formatDuration(settings.attendance.duplicatePreventionWindow)
+              }}
+            </p>
+          </ion-label>
+          <ion-range
+            [(ngModel)]="settings.attendance.duplicatePreventionWindow"
+            min="60000"
+            max="900000"
+            step="60000"
+            pin="true"
+            (ionChange)="onSettingChange()"
+          >
+            <ion-label slot="start">1 นาที</ion-label>
+            <ion-label slot="end">15 นาที</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <!-- Auto Checkout -->
+        <ion-item lines="full">
+          <ion-label>
+            <h2>ออกงานอัตโนมัติ</h2>
+            <p>ออกงานให้อัตโนมัติเมื่อครบชั่วโมง</p>
+          </ion-label>
+          <ion-toggle
+            [(ngModel)]="settings.attendance.autoCheckoutEnabled"
+            (ionChange)="onSettingChange()"
+          >
+          </ion-toggle>
+        </ion-item>
+
+        <ion-item *ngIf="settings.attendance.autoCheckoutEnabled" lines="full">
+          <ion-label position="stacked">
+            ชั่วโมงทำงาน
+            <p>{{ formatHours(settings.attendance.autoCheckoutHours) }}</p>
+          </ion-label>
+          <ion-range
+            [(ngModel)]="settings.attendance.autoCheckoutHours"
+            min="4"
+            max="12"
+            step="0.5"
+            pin="true"
+            (ionChange)="onSettingChange()"
+          >
+            <ion-label slot="start">4h</ion-label>
+            <ion-label slot="end">12h</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <!-- Require Location -->
+        <ion-item lines="full">
+          <ion-label>
+            <h2>บังคับตำแหน่ง GPS</h2>
+            <p>ต้องมีข้อมูลตำแหน่งเมื่อเข้างาน</p>
+          </ion-label>
+          <ion-toggle
+            [(ngModel)]="settings.attendance.requireLocation"
+            (ionChange)="onSettingChange()"
+          >
+          </ion-toggle>
+        </ion-item>
+
+        <!-- Require Photo -->
+        <ion-item lines="none">
+          <ion-label>
+            <h2>บังคับรูปภาพ</h2>
+            <p>ต้องมีรูปภาพเมื่อเข้างาน</p>
+          </ion-label>
+          <ion-toggle
+            [(ngModel)]="settings.attendance.requirePhoto"
+            (ionChange)="onSettingChange()"
+          >
+          </ion-toggle>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Advanced Settings -->
+  <div *ngIf="selectedSegment === 'advanced'" class="settings-section">
+    <!-- Security Settings -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>ความปลอดภัย</ion-card-title>
+        <ion-card-subtitle>จัดการรหัส PIN และการเข้าถึงระบบ</ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <ion-item lines="none" button (click)="openPinChange()">
+          <ion-icon name="key-outline" slot="start" color="primary"></ion-icon>
+          <ion-label>
+            <h2>เปลี่ยนรหัส PIN</h2>
+            <p>เปลี่ยนรหัส PIN สำหรับเข้าถึงการตั้งค่า Admin</p>
+          </ion-label>
+          <ion-icon name="chevron-forward" slot="end"></ion-icon>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-label>
+            <p class="session-info">
+              <ion-icon name="time-outline"></ion-icon>
+              เซสชันหมดอายุใน: <strong>{{ sessionTimeRemaining }} นาที</strong>
+            </p>
+          </ion-label>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>การตั้งค่าขั้นสูง</ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Camera Quality -->
+        <ion-item lines="full">
+          <ion-label position="stacked">
+            คุณภาพภาพถ่าย
+            <p>{{ settings.camera.quality }}%</p>
+          </ion-label>
+          <ion-range
+            [(ngModel)]="settings.camera.quality"
+            min="50"
+            max="100"
+            step="10"
+            pin="true"
+            (ionChange)="onSettingChange()"
+          >
+            <ion-label slot="start">50%</ion-label>
+            <ion-label slot="end">100%</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <!-- Storage Retention -->
+        <ion-item lines="full">
+          <ion-label position="stacked">
+            เก็บข้อมูล (วัน)
+            <p>{{ settings.storage.recordRetentionDays }} วัน</p>
+          </ion-label>
+          <ion-range
+            [(ngModel)]="settings.storage.recordRetentionDays"
+            min="7"
+            max="365"
+            step="7"
+            pin="true"
+            (ionChange)="onSettingChange()"
+          >
+            <ion-label slot="start">7</ion-label>
+            <ion-label slot="end">365</ion-label>
+          </ion-range>
+        </ion-item>
+
+        <!-- Auto Cleanup -->
+        <ion-item lines="full">
+          <ion-label>
+            <h2>ลบข้อมูลเก่าอัตโนมัติ</h2>
+            <p>ลบข้อมูลที่เกินกำหนดอัตโนมัติ</p>
+          </ion-label>
+          <ion-toggle
+            [(ngModel)]="settings.storage.autoCleanupEnabled"
+            (ionChange)="onSettingChange()"
+          >
+          </ion-toggle>
+        </ion-item>
+
+        <!-- Show Confidence Scores -->
+        <ion-item lines="none">
+          <ion-label>
+            <h2>แสดงคะแนนความแม่นยำ</h2>
+            <p>แสดงเปอร์เซ็นต์ในหน้าเข้างาน</p>
+          </ion-label>
+          <ion-toggle
+            [(ngModel)]="settings.ui.showConfidenceScores"
+            (ionChange)="onSettingChange()"
+          >
+          </ion-toggle>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Actions -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>การจัดการ</ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content>
+        <ion-button expand="block" color="warning" (click)="resetToDefaults()">
+          <ion-icon name="refresh" slot="start"></ion-icon>
+          รีเซ็ตเป็นค่าเริ่มต้น
+        </ion-button>
+
+        <p class="ion-text-center ion-margin-top">
+          <small>Version: {{ settings.version }}</small><br />
+          <small *ngIf="settings.lastUpdated"
+            >อัปเดตล่าสุด: {{ settings.lastUpdated | date:'short' }}</small
+          >
+        </p>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Data Management Section -->
+  <div *ngIf="selectedSegment === 'data'" class="settings-section">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>จัดการข้อมูลระบบ</ion-card-title>
+        <ion-card-subtitle>
+          ลบหรือรีเซ็ตข้อมูลสำหรับการทดสอบระบบ (ไม่สามารถย้อนกลับได้)
+        </ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Warning Notice -->
+        <ion-item lines="none" color="warning">
+          <ion-icon name="warning" slot="start"></ion-icon>
+          <ion-label class="ion-text-wrap">
+            <h3>⚠️ คำเตือน</h3>
+            <p>การลบข้อมูลไม่สามารถย้อนกลับได้ กรุณาใช้งานอย่างระมัดระวัง</p>
+          </ion-label>
+        </ion-item>
+
+        <!-- Clear Employees -->
+        <ion-item-divider>
+          <ion-label>ข้อมูลพนักงาน</ion-label>
+        </ion-item-divider>
+
+        <ion-item lines="none">
+          <ion-label class="ion-text-wrap">
+            <h3>ลบข้อมูลพนักงานทั้งหมด</h3>
+            <p>ลบข้อมูลพนักงานและใบหน้าที่ลงทะเบียนทั้งหมดออกจากระบบ</p>
+          </ion-label>
+        </ion-item>
+
+        <ion-button
+          expand="block"
+          color="danger"
+          (click)="clearAllEmployees()"
+          class="ion-margin"
+        >
+          <ion-icon name="people" slot="start"></ion-icon>
+          ลบพนักงานทั้งหมด
+        </ion-button>
+
+        <!-- Clear Attendance -->
+        <ion-item-divider class="ion-margin-top">
+          <ion-label>ประวัติการเข้างาน</ion-label>
+        </ion-item-divider>
+
+        <ion-item lines="none">
+          <ion-label class="ion-text-wrap">
+            <h3>ลบประวัติการเข้างานทั้งหมด</h3>
+            <p>ลบบันทึกการเข้า-ออกงานทั้งหมดออกจากระบบ</p>
+          </ion-label>
+        </ion-item>
+
+        <ion-button
+          expand="block"
+          color="danger"
+          (click)="clearAllAttendance()"
+          class="ion-margin"
+        >
+          <ion-icon name="calendar" slot="start"></ion-icon>
+          ลบประวัติการเข้างานทั้งหมด
+        </ion-button>
+
+        <!-- Reset All Data -->
+        <ion-item-divider class="ion-margin-top">
+          <ion-label>รีเซ็ตระบบ</ion-label>
+        </ion-item-divider>
+
+        <ion-item lines="none">
+          <ion-label class="ion-text-wrap">
+            <h3>รีเซ็ตข้อมูลทั้งหมด</h3>
+            <p>
+              ลบข้อมูลพนักงาน + ประวัติการเข้างาน + ข้อมูลอื่นๆ ทั้งหมดในระบบ
+            </p>
+          </ion-label>
+        </ion-item>
+
+        <ion-button
+          expand="block"
+          color="danger"
+          fill="solid"
+          (click)="resetAllData()"
+          class="ion-margin"
+        >
+          <ion-icon name="nuclear" slot="start"></ion-icon>
+          รีเซ็ตระบบทั้งหมด
+        </ion-button>
+
+        <!-- Info -->
+        <ion-card color="light" class="ion-margin-top">
+          <ion-card-content>
+            <ion-text color="medium">
+              <p class="ion-no-margin">
+                <ion-icon name="information-circle"></ion-icon>
+                <strong>หมายเหตุ:</strong>
+              </p>
+              <ul>
+                <li>การลบข้อมูลจะต้องยืนยันอีกครั้งก่อนดำเนินการ</li>
+                <li>ควรใช้ฟีเจอร์นี้เฉพาะในการทดสอบระบบเท่านั้น</li>
+                <li>ข้อมูลที่ลบแล้วจะไม่สามารถกู้คืนได้</li>
+              </ul>
+            </ion-text>
+          </ion-card-content>
+        </ion-card>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- Floating Save Button -->
+  <ion-fab
+    vertical="bottom"
+    horizontal="end"
+    slot="fixed"
+    *ngIf="hasUnsavedChanges"
+  >
+    <ion-fab-button color="success" (click)="saveSettings()">
+      <ion-icon name="save"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

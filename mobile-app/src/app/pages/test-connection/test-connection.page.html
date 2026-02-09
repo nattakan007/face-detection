@@ -1,0 +1,142 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin-dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>ทดสอบการเชื่อมต่อ Supabase</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="clearResults()">
+        <ion-icon name="trash-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="test-container">
+    <!-- Database Info -->
+    <ion-card color="light">
+      <ion-card-content>
+        <h3>📊 ข้อมูล Supabase</h3>
+        <p><strong>URL:</strong> https://zjyrciehnvjouakzvwxk.supabase.co</p>
+        <p>
+          <strong>Tables:</strong> companies, employees, attendance, settings
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Test Buttons -->
+    <div class="test-section">
+      <h2>เมนูทดสอบ</h2>
+
+      <ion-button
+        expand="block"
+        (click)="testBasicConnection()"
+        [disabled]="isLoading"
+      >
+        <ion-icon name="cloud-outline" slot="start"></ion-icon>
+        1. ทดสอบการเชื่อมต่อ
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        (click)="testGetCompanies()"
+        [disabled]="isLoading"
+        color="secondary"
+      >
+        <ion-icon name="business-outline" slot="start"></ion-icon>
+        2. ดึงข้อมูลบริษัท
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        (click)="testGetOrCreateCompany()"
+        [disabled]="isLoading"
+        color="tertiary"
+      >
+        <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+        3. สร้าง/ดึง Company ID
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        (click)="checkLocalData()"
+        [disabled]="isLoading"
+        color="warning"
+      >
+        <ion-icon name="folder-outline" slot="start"></ion-icon>
+        4. ตรวจสอบข้อมูลใน IndexedDB
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        (click)="testSyncAttendance()"
+        [disabled]="isLoading"
+        color="success"
+      >
+        <ion-icon name="time-outline" slot="start"></ion-icon>
+        5. Sync Attendance
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        (click)="testSyncProfiles()"
+        [disabled]="isLoading"
+        color="success"
+      >
+        <ion-icon name="people-outline" slot="start"></ion-icon>
+        6. Sync User Profiles
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        (click)="testFullSync()"
+        [disabled]="isLoading"
+        color="danger"
+      >
+        <ion-icon name="sync-outline" slot="start"></ion-icon>
+        7. Full Sync (ทั้งหมด)
+      </ion-button>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div *ngIf="isLoading" class="loading-spinner">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>กำลังประมวลผล...</p>
+    </div>
+
+    <!-- Results -->
+    <div class="results-section">
+      <h2>ผลลัพธ์</h2>
+
+      <ion-card
+        *ngFor="let result of results"
+        [class]="'result-' + result.type"
+      >
+        <ion-card-content>
+          <div class="result-header">
+            <ion-icon
+              [name]="getIcon(result.type)"
+              [color]="result.type === 'success' ? 'success' : result.type === 'error' ? 'danger' : result.type === 'warning' ? 'warning' : 'primary'"
+            ></ion-icon>
+            <span class="timestamp">{{ result.timestamp }}</span>
+          </div>
+          <p class="message">{{ result.message }}</p>
+          <pre *ngIf="result.data" class="data">{{ result.data | json }}</pre>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card *ngIf="results.length === 0" class="empty-state">
+        <ion-card-content>
+          <ion-icon
+            name="information-circle-outline"
+            size="large"
+            color="medium"
+          ></ion-icon>
+          <p>ยังไม่มีผลลัพธ์</p>
+          <p class="hint">กดปุ่มด้านบนเพื่อเริ่มทดสอบ</p>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+</ion-content>

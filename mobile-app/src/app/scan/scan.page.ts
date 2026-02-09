@@ -1,8 +1,10 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, OnDestroy } from "@angular/core";
 import { Router } from "@angular/router";
+import { Platform } from "@ionic/angular";
 import { FaceDetectionService } from "../services/face-detection.service";
 import { StorageService, AttendanceRecord } from "../services/storage.service";
 import { SettingsService } from "../services/settings.service";
+import { AuthService } from "../services/auth.service";
 import { Geolocation, Position } from "@capacitor/geolocation";
 import {
   LoadingController,
@@ -17,29 +19,113 @@ import { SettingsMenuPopover } from "./settings-menu.popover";
   templateUrl: "scan.page.html",
   styleUrls: ["scan.page.scss"],
 })
-export class ScanPage implements OnInit {
+export class ScanPage implements OnInit, OnDestroy {
   userProfile: any = null;
   lastAttendance: any = null;
   isScanning = false;
+  scanMode: "check-in" | "check-out" = "check-in";
   previewImage: string | null = null;
+  showTestButton = false;
+
+  // New UI properties
+  currentTime: string = "";
+  currentDate: string = "";
+  todayCheckIn: string | null = null;
+  todayCheckOut: string | null = null;
+  employeeCount: number = 0;
+  isOnline: boolean = true;
+  private timeInterval: any;
 
   constructor(
     private router: Router,
+    private platform: Platform,
     private faceDetection: FaceDetectionService,
     private storage: StorageService,
     private settingsService: SettingsService,
+    private authService: AuthService,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
     private alertCtrl: AlertController,
-    private popoverCtrl: PopoverController
+    private popoverCtrl: PopoverController,
   ) {}
 
   async ngOnInit() {
+    // Show test button only on browser
+    this.showTestButton = !this.platform.is("capacitor");
+
     await this.faceDetection.loadModels();
     this.userProfile = await this.storage.getUserProfile();
     this.lastAttendance = await this.getLastAttendance();
     // Load schedule settings
     await this.settingsService.getSettings();
+
+    // Initialize new UI
+    this.updateDateTime();
+    this.timeInterval = setInterval(() => this.updateDateTime(), 1000);
+    await this.loadTodayStatus();
+    await this.loadEmployeeCount();
+    this.isOnline = navigator.onLine;
+    window.addEventListener("online", () => (this.isOnline = true));
+    window.addEventListener("offline", () => (this.isOnline = false));
+  }
+
+  ionViewWillEnter() {
+    // Reset scanning state when entering this page
+    this.isScanning = false;
+    this.loadTodayStatus();
+    this.loadEmployeeCount();
+  }
+
+  ionViewWillLeave() {
+    // Keep timer running - only clear on destroy
+  }
+
+  ngOnDestroy() {
+    if (this.timeInterval) {
+      clearInterval(this.timeInterval);
+    }
+  }
+
+  updateDateTime() {
+    const now = new Date();
+    this.currentTime = now.toLocaleTimeString("th-TH", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+    this.currentDate = now.toLocaleDateString("th-TH", options);
+  }
+
+  async loadTodayStatus() {
+    const todayRecords = await this.storage.getTodayAttendance();
+    const checkInRecord = todayRecords.find(
+      (r: AttendanceRecord) => r.type === "check-in",
+    );
+    const checkOutRecord = todayRecords.find(
+      (r: AttendanceRecord) => r.type === "check-out",
+    );
+    this.todayCheckIn = checkInRecord?.time || null;
+    this.todayCheckOut = checkOutRecord?.time || null;
+  }
+
+  async loadEmployeeCount() {
+    const users = await this.storage.getAllUsers();
+    this.employeeCount = users.length;
+  }
+
+  async goToAdmin() {
+    const isAuth = await this.authService.isAuthenticated();
+    if (isAuth) {
+      this.router.navigate(["/admin-login"]);
+    } else {
+      this.router.navigate(["/admin-login"]);
+    }
   }
 
   async getLastAttendance() {
@@ -47,34 +133,100 @@ export class ScanPage implements OnInit {
     return todayRecords.length > 0 ? todayRecords[0] : null;
   }
 
-  async startScan() {
-    if (this.isScanning) return;
-
+  // Start scanning with specified mode (check-in or check-out)
+  startScan(mode: "check-in" | "check-out") {
+    this.scanMode = mode;
     this.isScanning = true;
+  }
+
+  // Cancel scanning and reset to button selection
+  cancelScan() {
+    this.isScanning = false;
+  }
+
+  // Handle face detected from live camera with auto-scan
+  async onFaceDetected(event: any) {
+    console.log("[SCAN-PAGE] onFaceDetected() called");
+    console.log("[SCAN-PAGE] Event data:", {
+      hasImageData: !!event?.imageDataUrl,
+      hasDetection: !!event?.detection,
+      detectionDetected: event?.detection?.detected,
+      detectionConfidence: event?.detection?.confidence,
+      detectionMatched: event?.detection?.matched,
+      detectionNoMatch: event?.detection?.noMatch,
+      isScanning: this.isScanning,
+      scanMode: this.scanMode,
+    });
+
+    if (!this.isScanning) {
+      console.log("[SCAN-PAGE] Not scanning, ignoring event");
+      return;
+    }
+
+    const { imageDataUrl, detection } = event;
+
+    console.log("[SCAN-PAGE] Processing face detection...");
+    // Process attendance based on scan mode
+    await this.processFaceDetection(detection, imageDataUrl);
+    console.log("[SCAN-PAGE] Face detection processing completed");
+  }
+
+  async onPhotoCaptured(imageDataUrl: string) {
+    // Legacy handler - not used in auto-scan mode
+  }
+
+  async onMatchError(error: string) {
+    this.isScanning = false;
+    // Navigate ไปหน้าแจ้งเตือน
+    this.router.navigate(["/notification"], {
+      state: {
+        type: "error",
+        title: "เกิดข้อผิดพลาด",
+        message: error,
+      },
+    });
+  }
+
+  async onNoFace() {
+    this.isScanning = false;
+    // Navigate ไปหน้าแจ้งเตือน
+    this.router.navigate(["/notification"], {
+      state: {
+        type: "warning",
+        title: "ไม่พบใบหน้า",
+        message: "กรุณาลองใหม่อีกครั้ง",
+      },
+    });
+  }
+
+  /**
+   * เมื่อไม่พบใบหน้าเป็นเวลา 3 วินาที - กลับหน้าแรก
+   */
+  async onNoFaceTimeout() {
+    this.isScanning = false;
+    this.router.navigate(["/scan"]);
+  }
+
+  async processFaceDetection(detection: any, imageDataUrl: string) {
     const loading = await this.loadingCtrl.create({
-      message: "กำลังเปิดกล้อง...",
+      message: "กำลังตรวจสอบใบหน้า...",
     });
     await loading.present();
 
     try {
-      // Take photo
-      const imageDataUrl = await this.faceDetection.takePhoto();
-      if (!imageDataUrl) {
-        throw new Error("ไม่สามารถถ่ายภาพได้");
-      }
-      this.previewImage = imageDataUrl;
-
-      loading.message = "กำลังตรวจจับใบหน้า...";
-
-      // Detect face
-      const detection = await this.faceDetection.detectFace(imageDataUrl);
-
+      console.log("=== Starting face detection process ===");
       if (!detection.detected) {
         throw new Error(detection.error || "ไม่พบใบหน้าในภาพ กรุณาลองใหม่");
       }
 
+      // Verify face descriptor exists
+      if (!detection.descriptor) {
+        throw new Error("ไม่สามารถดึงข้อมูลใบหน้าได้");
+      }
+
       // Show warning if low confidence
       if (detection.warning) {
+        await loading.dismiss();
         const alert = await this.alertCtrl.create({
           header: "คำเตือน",
           message: detection.warning,
@@ -82,11 +234,14 @@ export class ScanPage implements OnInit {
             {
               text: "ยกเลิก",
               role: "cancel",
+              handler: () => {
+                this.isScanning = false;
+              },
             },
             {
               text: "ดำเนินการต่อ",
               handler: async () => {
-                await this.processAttendance(detection, imageDataUrl, loading);
+                await this.processAttendance(detection, imageDataUrl);
               },
             },
           ],
@@ -95,18 +250,21 @@ export class ScanPage implements OnInit {
         return;
       }
 
-      await this.processAttendance(detection, imageDataUrl, loading);
-    } catch (error: any) {
-      const alert = await this.alertCtrl.create({
-        header: "เกิดข้อผิดพลาด",
-        message: error.message || "ไม่สามารถสแกนใบหน้าได้ กรุณาลองใหม่",
-        buttons: ["ตกลง"],
-      });
-      await alert.present();
-    } finally {
-      this.isScanning = false;
-      this.previewImage = null;
+      await this.processAttendance(detection, imageDataUrl);
+      console.log("=== Dismissing loading ===");
       await loading.dismiss();
+    } catch (error: any) {
+      console.error("=== Error in face detection ===", error);
+      await loading.dismiss();
+      this.isScanning = false;
+      // Navigate ไปหน้าแจ้งเตือนข้อผิดพลาด
+      this.router.navigate(["/notification"], {
+        state: {
+          type: "error",
+          title: "เกิดข้อผิดพลาด",
+          message: error.message || "ไม่สามารถสแกนใบหน้าได้ กรุณาลองใหม่",
+        },
+      });
     }
   }
 
@@ -117,43 +275,48 @@ export class ScanPage implements OnInit {
       : "เช็คชื่อเข้างาน";
   }
 
-  async processAttendance(detection: any, imageDataUrl: string, loading: any) {
+  async processAttendance(detection: any, imageDataUrl: string) {
     try {
       // Identify face from local storage
       const identification = await this.faceDetection.identifyFace(
-        detection.descriptor
+        detection.descriptor,
       );
 
       if (!identification.identified) {
-        const alert = await this.alertCtrl.create({
-          header: "ไม่สามารถระบุตัวตนได้",
-          message: identification.message || "ไม่พบข้อมูลใบหน้าในระบบ",
-          buttons: ["ตกลง"],
+        this.isScanning = false;
+        // Navigate ไปหน้าแจ้งเตือน
+        this.router.navigate(["/notification"], {
+          state: {
+            type: "error",
+            title: "ไม่สามารถระบุตัวตนได้",
+            message: identification.message || "ไม่พบข้อมูลใบหน้าในระบบ",
+          },
         });
-        await alert.present();
         return;
       }
 
-      // Determine check-in or check-out
+      // Use the scan mode instead of determining from last attendance
+      const type = this.scanMode;
       const now = new Date();
-      const type =
-        this.lastAttendance?.type === "check-in" ? "check-out" : "check-in";
 
       // Check for duplicate attendance within 5 minutes
       const isDuplicate = await this.checkDuplicateAttendance(
         identification.employeeId || "",
-        type
+        type,
       );
 
       if (isDuplicate) {
-        const alert = await this.alertCtrl.create({
-          header: "ข้อมูลซ้ำซ้อน",
-          message: `คุณได้${
-            type === "check-in" ? "เช็คชื่อเข้างาน" : "เช็คชื่อออกงาน"
-          }ไปแล้วเมื่อไม่นานนี้ กรุณารออย่างน้อย 5 นาทีก่อนเช็คชื่อซ้ำ`,
-          buttons: ["ตกลง"],
+        this.isScanning = false;
+        // Navigate ไปหน้าแจ้งเตือน
+        this.router.navigate(["/notification"], {
+          state: {
+            type: "warning",
+            title: "ข้อมูลซ้ำซ้อน",
+            message: `คุณได้${
+              type === "check-in" ? "เช็คชื่อเข้างาน" : "เช็คชื่อออกงาน"
+            }ไปแล้วเมื่อไม่นานนี้ กรุณารออย่างน้อย 5 นาทีก่อนเช็คชื่อซ้ำ`,
+          },
         });
-        await alert.present();
         return;
       }
 
@@ -170,6 +333,7 @@ export class ScanPage implements OnInit {
       }
 
       // Save attendance record with face identification info
+      console.log("=== Saving attendance record ===");
       const record = await this.storage.saveAttendance({
         type,
         timestamp: now.getTime(),
@@ -182,49 +346,58 @@ export class ScanPage implements OnInit {
         employeeId: identification.employeeId || "",
         employeeName: identification.userName || "",
       });
+      console.log("=== Attendance saved successfully ===", record);
 
-      // Show success message with confidence
-      const message =
-        type === "check-in"
-          ? `เช็คชื่อเข้างานสำเร็จ! (${Math.round(
-              detection.confidence * 100
-            )}% confidence)`
-          : `เช็คชื่อออกงานสำเร็จ! (${Math.round(
-              detection.confidence * 100
-            )}% confidence)`;
+      // Stop scanning
+      this.isScanning = false;
+      console.log("=== Stopped scanning, navigating... ===");
 
-      const toast = await this.toastCtrl.create({
-        message,
-        color: "success",
-        duration: 3000,
+      // Navigate ไปหน้าแจ้งเตือนสำเร็จทันที
+      this.router.navigate(["/notification"], {
+        state: {
+          type: "success",
+          title: type === "check-in" ? "เข้างานสำเร็จ!" : "ออกงานสำเร็จ!",
+          message: `บันทึกข้อมูล${
+            type === "check-in" ? "เข้างาน" : "ออกงาน"
+          }เรียบร้อยแล้ว`,
+          details: {
+            employeeName: identification.userName,
+            confidence: Math.round(detection.confidence * 100),
+            time: now.toLocaleTimeString("th-TH"),
+          },
+        },
       });
-      await toast.present();
+
+      // Sync จะทำงานตามรอบเวลาผ่าน SyncSchedulerService (ทุก 5 นาที)
 
       // Update last attendance
       this.lastAttendance = record;
-
-      // Reset preview image
-      this.previewImage = null;
     } catch (error: any) {
       throw error;
     }
   }
 
   /**
-   * Check if employee has duplicate attendance within 5 minutes
+   * Check if employee has duplicate attendance within configured time window
    */
   private async checkDuplicateAttendance(
     employeeId: string,
-    type: "check-in" | "check-out"
+    type: "check-in" | "check-out",
   ): Promise<boolean> {
     const records = await this.storage.getAttendanceRecords();
-    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000; // 5 minutes in milliseconds
+
+    // Load duplicate prevention window from settings
+    const attendanceSettings =
+      await this.settingsService.getAttendanceSettings();
+    const preventionWindow = attendanceSettings.duplicatePreventionWindow; // milliseconds
+
+    const cutoffTime = Date.now() - preventionWindow;
 
     const recentDuplicate = records.find(
       (record: AttendanceRecord) =>
         record.employeeId === employeeId &&
         record.type === type &&
-        record.timestamp > fiveMinutesAgo
+        record.timestamp > cutoffTime,
     );
 
     return !!recentDuplicate;
@@ -437,7 +610,7 @@ export class ScanPage implements OnInit {
 
       this.showToast(
         `${type === "check-in" ? "เข้างาน" : "ออกงาน"}สำเร็จแล้ว`,
-        "success"
+        "success",
       );
     } catch (error: any) {
       await loading.dismiss();
@@ -544,23 +717,21 @@ export class ScanPage implements OnInit {
     // Add employee list to modal
     setTimeout(async () => {
       const employeeListEl = document.getElementById(
-        "employeeList"
+        "employeeList",
       ) as HTMLElement;
       if (employeeListEl) {
         this.renderEmployeeList(employees, employeeListEl);
 
         // Add search functionality
-        const searchInput = document.getElementById(
-          "employeeSearch"
-        ) as HTMLIonInputElement;
+        const searchInput = document.getElementById("employeeSearch") as any;
         if (searchInput) {
-          await searchInput.componentOnReady();
+          await searchInput.componentOnReady?.();
           searchInput.addEventListener("ionInput", (e: any) => {
             const searchTerm = e.target.value?.toLowerCase() || "";
             const filtered = employees.filter(
               (emp) =>
                 emp.name.toLowerCase().includes(searchTerm) ||
-                emp.employeeId.toLowerCase().includes(searchTerm)
+                emp.employeeId.toLowerCase().includes(searchTerm),
             );
             this.renderEmployeeList(filtered, employeeListEl);
           });
@@ -615,7 +786,7 @@ export class ScanPage implements OnInit {
         // Remove previous selections
         const items = container.querySelectorAll(".employee-item");
         items.forEach(
-          (i: any) => ((i as HTMLElement).style.border = "1px solid #e0e0e0")
+          (i: any) => ((i as HTMLElement).style.border = "1px solid #e0e0e0"),
         );
 
         // Mark as selected
@@ -646,7 +817,7 @@ export class ScanPage implements OnInit {
 
   private getSelectedEmployee(): any {
     const selectedItem = document.querySelector(
-      '.employee-item[data-selected="true"]'
+      '.employee-item[data-selected="true"]',
     );
     if (selectedItem) {
       return JSON.parse(selectedItem.getAttribute("data-employee") || "{}");
@@ -702,7 +873,7 @@ export class ScanPage implements OnInit {
         const alert = await this.alertCtrl.create({
           header: "ความแม่นยำต่ำ",
           message: `ตรวจพบใบหน้า ${Math.round(
-            detection.confidence * 100
+            detection.confidence * 100,
           )}% เท่านั้น\nต้องการความมั่นอย่างน้อย 70% จึงจะดำเนินการต่อ`,
           buttons: [
             {
@@ -745,7 +916,7 @@ export class ScanPage implements OnInit {
   private async processManualAttendance(
     employee: any,
     detection: any,
-    imageDataUrl: string
+    imageDataUrl: string,
   ) {
     try {
       // Get current location
@@ -801,7 +972,7 @@ export class ScanPage implements OnInit {
               record.time
             }</div>
             <div><strong>ความมั่น:</strong> ${Math.round(
-              detection.confidence * 100
+              detection.confidence * 100,
             )}%</div>
           </div>
         `,
@@ -831,77 +1002,142 @@ export class ScanPage implements OnInit {
     }
   }
 
-  // Live Camera Event Handlers
-  async onPhotoCaptured(imageDataUrl: any) {
-    console.log("Photo captured:", imageDataUrl);
-    // Handle photo capture if needed
-  }
+  /**
+   * ทดสอบด้วยการอัปโหลดรูปภาพ (แสดงเฉพาะบน browser)
+   */
+  async testWithImageUpload() {
+    // Create file input element
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
 
-  async onFaceDetected(event: any) {
-    if (!event.detected) return;
+    input.onchange = async (event: any) => {
+      const file = event.target.files[0];
+      if (!file) return;
 
-    const loading = await this.loadingCtrl.create({
-      message: "กำลังบันทึกข้อมูลการเข้างาน...",
-    });
-    await loading.present();
+      console.log("[SCAN-TEST] Image uploaded:", file.name);
 
-    try {
-      // Get current location
-      let location;
+      const loading = await this.loadingCtrl.create({
+        message: "กำลังประมวลผลภาพ...",
+      });
+      await loading.present();
+
       try {
-        const position: Position = await Geolocation.getCurrentPosition();
-        location = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        };
+        // Convert to base64
+        const base64Image = await this.fileToBase64(file);
+        console.log(
+          "[SCAN-TEST] Image converted to base64, size:",
+          base64Image.length,
+        );
+
+        // Detect face
+        const detection = await this.faceDetection.detectFace(base64Image);
+        console.log("[SCAN-TEST] Detection result:", detection);
+
+        if (!detection.detected || !detection.descriptor) {
+          await loading.dismiss();
+          const alert = await this.alertCtrl.create({
+            header: "ไม่พบใบหน้า",
+            message:
+              "ไม่พบใบหน้าในภาพที่อัปโหลด กรุณาลองใหม่ด้วยรูปที่มีใบหน้าชัดเจน",
+            buttons: ["ตกลง"],
+          });
+          await alert.present();
+          return;
+        }
+
+        // Identify face
+        const identification = await this.faceDetection.identifyFace(
+          detection.descriptor,
+        );
+        console.log("[SCAN-TEST] Identification result:", identification);
+
+        await loading.dismiss();
+
+        if (identification.identified) {
+          // Match found!
+          const similarity = Math.round((identification.similarity || 0) * 100);
+          const employee = identification.faceData;
+
+          const alert = await this.alertCtrl.create({
+            header: "✅ พบพนักงานในระบบ!",
+            message: `
+              <div style="text-align: left;">
+                <div style="margin-bottom: 10px;"><strong>ชื่อ:</strong> ${employee.name}</div>
+                <div style="margin-bottom: 10px;"><strong>รหัส:</strong> ${employee.employeeId}</div>
+                <div style="margin-bottom: 10px;"><strong>ความแม่นยำ:</strong> ${similarity}%</div>
+              </div>
+            `,
+            buttons: [
+              {
+                text: "ยกเลิก",
+                role: "cancel",
+              },
+              {
+                text: "บันทึกเข้างาน",
+                handler: async () => {
+                  this.scanMode = "check-in";
+                  await this.processAttendance(detection, base64Image);
+                },
+              },
+              {
+                text: "บันทึกออกงาน",
+                handler: async () => {
+                  this.scanMode = "check-out";
+                  await this.processAttendance(detection, base64Image);
+                },
+              },
+            ],
+          });
+          await alert.present();
+        } else {
+          // No match
+          const alert = await this.alertCtrl.create({
+            header: "❌ ไม่พบพนักงานในระบบ",
+            message: `
+              <div style="text-align: left;">
+                <div style="margin-bottom: 10px;">ตรวจพบใบหน้าในภาพ แต่ไม่ตรงกับพนักงานที่ลงทะเบียนไว้</div>
+                <div><strong>ความมั่นใจ:</strong> ${Math.round(
+                  detection.confidence * 100,
+                )}%</div>
+                ${
+                  identification.debugInfo
+                    ? `<div style="margin-top: 10px; font-size: 12px; color: #666;">${identification.debugInfo}</div>`
+                    : ""
+                }
+              </div>
+            `,
+            buttons: ["ตกลง"],
+          });
+          await alert.present();
+        }
       } catch (error) {
-        console.warn("Could not get location:", error);
+        console.error("[SCAN-TEST] Error:", error);
+        await loading.dismiss();
+
+        const alert = await this.alertCtrl.create({
+          header: "เกิดข้อผิดพลาด",
+          message: "ไม่สามารถประมวลผลภาพได้: " + error,
+          buttons: ["ตกลง"],
+        });
+        await alert.present();
       }
+    };
 
-      // Determine check-in or check-out
-      const now = new Date();
-      const type =
-        this.lastAttendance?.type === "check-in" ? "check-out" : "check-in";
-
-      // Save attendance record with face identification info
-      const record = await this.storage.saveAttendance({
-        type,
-        timestamp: now.getTime(),
-        date: now.toLocaleDateString("th-TH"),
-        time: now.toLocaleTimeString("th-TH", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        location: location,
-        faceDescriptor: event.user.faceDescriptor || event.user.descriptor,
-        confidence: event.confidence,
-        employeeId: event.user.employeeId || event.user.id,
-        employeeName: event.user.name,
-        employeeDepartment: event.user.department,
-      });
-
-      // Update last attendance
-      this.lastAttendance = record;
-
-      // Show success message
-      const toast = await this.toastCtrl.create({
-        message: `${
-          type === "check-in" ? "เช็คชื่อเข้างาน" : "เช็คชื่อออกงาน"
-        }สำเร็จ! คุณ${event.user.name}`,
-        color: "success",
-        duration: 3000,
-      });
-      await toast.present();
-    } catch (error) {
-      console.error("Error saving attendance:", error);
-      const toast = await this.toastCtrl.create({
-        message: "เกิดข้อผิดพลาดในการบันทึกข้อมูล",
-        color: "danger",
-        duration: 3000,
-      });
-      await toast.present();
-    } finally {
-      await loading.dismiss();
-    }
+    input.click();
   }
+
+  /**
+   * แปลงไฟล์เป็น Base64
+   */
+  private fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // Live Camera Event Handlers
 }

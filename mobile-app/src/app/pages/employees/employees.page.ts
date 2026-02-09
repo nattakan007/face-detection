@@ -1,19 +1,28 @@
-import { Component, OnInit } from '@angular/core';
-import { StorageService } from '../../services/storage.service';
-import { UserProfile } from '../../services/storage.service';
+import { Component, OnInit } from "@angular/core";
+import { Platform } from "@ionic/angular";
+import { StorageService } from "../../services/storage.service";
+import { FaceDetectionService } from "../../services/face-detection.service";
+import { UserProfile } from "../../services/storage.service";
 
 @Component({
-  selector: 'app-employees',
-  templateUrl: './employees.page.html',
-  styleUrls: ['./employees.page.scss'],
+  selector: "app-employees",
+  templateUrl: "./employees.page.html",
+  styleUrls: ["./employees.page.scss"],
 })
 export class EmployeesPage implements OnInit {
   employees: UserProfile[] = [];
   isLoading = true;
+  showTestButton = false;
 
-  constructor(private storage: StorageService) { }
+  constructor(
+    private storage: StorageService,
+    private faceDetection: FaceDetectionService,
+    private platform: Platform
+  ) {}
 
   async ngOnInit() {
+    // Show test button only on browser
+    this.showTestButton = !this.platform.is("capacitor");
     await this.loadEmployees();
   }
 
@@ -23,7 +32,7 @@ export class EmployeesPage implements OnInit {
       const allUsers = await this.storage.getAllUsers();
       this.employees = allUsers;
     } catch (error) {
-      console.error('Error loading employees:', error);
+      console.error("Error loading employees:", error);
     } finally {
       this.isLoading = false;
     }
@@ -33,17 +42,70 @@ export class EmployeesPage implements OnInit {
     await this.loadEmployees();
     event.target.complete();
   }
+  /**
+   * สร้างพนักงานทดสอบ (แสดงเฉพาะบน browser)
+   */
+  async createTestEmployee() {
+    this.isLoading = true;
+    try {
+      console.log('[EMPLOYEES] Creating test employee "ทรี"...');
 
+      // โหลดภาพทดสอบ
+      const testImagePath = "assets/test-employee.jpg";
+      const response = await fetch(testImagePath);
+      const blob = await response.blob();
+      const base64Image = await this.blobToBase64(blob);
+
+      // ตรวจจับใบหน้า
+      const detection = await this.faceDetection.detectFace(base64Image);
+
+      if (!detection.detected || !detection.descriptor) {
+        console.error("[EMPLOYEES] Cannot detect face in test image");
+        alert("ไม่พบใบหน้าในภาพทดสอบ");
+        return;
+      }
+
+      // สร้างพนักงานทดสอบ
+      await this.storage.initTestEmployee(
+        "ทรี",
+        base64Image,
+        detection.descriptor
+      );
+      console.log('[EMPLOYEES] Test employee "ทรี" created successfully');
+
+      // Reload list
+      await this.loadEmployees();
+
+      alert('สร้างพนักงานทดสอบ "ทรี" สำเร็จ!');
+    } catch (error) {
+      console.error("[EMPLOYEES] Error creating test employee:", error);
+      alert("เกิดข้อผิดพลาด: " + error);
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  /**
+   * แปลง Blob เป็น Base64
+   */
+  private blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
   formatDate(timestamp: number): string {
     const date = new Date(timestamp);
-    return date.toLocaleDateString('th-TH', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
+    return date.toLocaleDateString("th-TH", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
     });
   }
 
   employeesWithPhoto(): number {
-    return this.employees.filter(e => e.photoPath).length;
+    return this.employees.filter((e) => e.photoPath).length;
   }
 }

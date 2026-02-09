@@ -1,95 +1,161 @@
 <ion-content [fullscreen]="true">
-  <!-- Floating Menu Button -->
-  <div style="position: fixed; top: 20px; right: 20px; z-index: 999">
-    <ion-button
-      (click)="presentMenu($event)"
-      fill="clear"
-      color="medium"
-      size="small"
-    >
-      ⋮
-    </ion-button>
-  </div>
-
-  <div class="scan-container">
-    <!-- Banner Section -->
-    <div class="banner-section">
-      <div class="banner-content">
-        <div class="banner-text">
-          <h1>SAILOR BAR & RESTAURANT</h1>
-          <p>ระบบลงทะเบียนเข้า-ออกงานด้วยใบหน้า</p>
-        </div>
+  <div class="main-container" *ngIf="!isScanning">
+    <!-- Admin Access Button -->
+    <div class="top-bar">
+      <div class="top-bar-left">
+        <ion-icon
+          name="wifi"
+          [color]="isOnline ? 'success' : 'medium'"
+          class="status-icon"
+        ></ion-icon>
       </div>
-    </div>
-
-    <div class="content-wrapper">
-      <!-- Camera Section -->
-      <div class="camera-section">
-        <!-- Live Camera Component -->
-        <app-live-camera
-          (onFaceDetected)="onFaceDetected($event)"
-          (onCapture)="onPhotoCaptured($event)"
+      <div class="top-bar-right">
+        <ion-button
+          fill="clear"
+          size="small"
+          (click)="goToAdmin()"
+          class="admin-btn"
         >
-        </app-live-camera>
-
-        <!-- Action Buttons Card -->
-        <div class="action-buttons-container">
-          <!-- 2x2 Grid Buttons -->
-          <div class="buttons-grid">
-            <!-- Row 1 -->
-            <ion-button
-              expand="block"
-              (click)="startManualCheckIn()"
-              class="grid-button primary-button"
-            >
-              <ion-icon
-                name="hand-right-outline"
-                style="font-size: 20px; margin-right: 6px"
-              ></ion-icon>
-              <span>เข้างานด้วยตัวเอง</span>
-            </ion-button>
-
-            <ion-button
-              expand="block"
-              (click)="goToRegister()"
-              class="grid-button register-button"
-            >
-              <ion-icon
-                name="person-add-outline"
-                style="font-size: 20px; margin-right: 6px"
-              ></ion-icon>
-              <span>ลงทะเบียน</span>
-            </ion-button>
-
-            <!-- Row 2 -->
-            <ion-button
-              expand="block"
-              routerLink="/employees"
-              class="grid-button employees-button"
-            >
-              <ion-icon
-                name="people-outline"
-                style="font-size: 20px; margin-right: 6px"
-              ></ion-icon>
-              <span>รายชื่อพนักงาน</span>
-            </ion-button>
-
-            <ion-button
-              expand="block"
-              routerLink="/history"
-              class="grid-button history-button"
-            >
-              <ion-icon
-                name="document-text-outline"
-                style="font-size: 20px; margin-right: 6px"
-              ></ion-icon>
-              <span>ประวัติ</span>
-            </ion-button>
-          </div>
-        </div>
+          <ion-icon name="settings-outline" slot="icon-only"></ion-icon>
+        </ion-button>
       </div>
     </div>
-    <!-- Close content-wrapper -->
+
+    <!-- Branding Section -->
+    <div class="branding-section">
+      <div class="logo-container">
+        <div class="logo-icon">
+          <ion-icon name="boat-outline"></ion-icon>
+        </div>
+        <h1 class="brand-name">SAILOR</h1>
+        <p class="brand-subtitle">BAR & RESTAURANT</p>
+      </div>
+      <div class="divider-line"></div>
+      <p class="system-label">ระบบลงเวลาด้วยใบหน้า</p>
+    </div>
+
+    <!-- Date & Time Display -->
+    <div class="datetime-section">
+      <div class="time-display">{{ currentTime }}</div>
+      <div class="date-display">{{ currentDate }}</div>
+    </div>
+
+    <!-- Today Status (if any) -->
+    <div class="today-status" *ngIf="todayCheckIn || todayCheckOut">
+      <div class="status-item" *ngIf="todayCheckIn">
+        <ion-icon name="log-in" color="success"></ion-icon>
+        <span>เข้างาน {{ todayCheckIn }}</span>
+      </div>
+      <div class="status-item" *ngIf="todayCheckOut">
+        <ion-icon name="log-out" color="warning"></ion-icon>
+        <span>ออกงาน {{ todayCheckOut }}</span>
+      </div>
+    </div>
+
+    <!-- Main Action Buttons -->
+    <div class="action-section">
+      <button class="action-card check-in-card" (click)="startScan('check-in')">
+        <div class="action-icon-wrapper check-in-icon">
+          <ion-icon name="log-in-outline"></ion-icon>
+        </div>
+        <div class="action-text">
+          <h2>สแกนเข้างาน</h2>
+          <p>Check In</p>
+        </div>
+      </button>
+
+      <button
+        class="action-card check-out-card"
+        (click)="startScan('check-out')"
+      >
+        <div class="action-icon-wrapper check-out-icon">
+          <ion-icon name="log-out-outline"></ion-icon>
+        </div>
+        <div class="action-text">
+          <h2>สแกนออกงาน</h2>
+          <p>Check Out</p>
+        </div>
+      </button>
+    </div>
+
+    <!-- Test Upload (Browser only) -->
+    <div class="test-section" *ngIf="showTestButton">
+      <ion-button
+        expand="block"
+        fill="outline"
+        color="medium"
+        (click)="testWithImageUpload()"
+      >
+        <ion-icon name="image-outline" slot="start"></ion-icon>
+        ทดสอบด้วยรูปภาพ (Browser)
+      </ion-button>
+    </div>
+
+    <!-- Employee Count -->
+    <div class="footer-info">
+      <span class="employee-count">
+        <ion-icon name="people-outline"></ion-icon>
+        พนักงานในระบบ {{ employeeCount }} คน
+      </span>
+    </div>
   </div>
-  <!-- Close scan-container -->
+
+  <!-- Camera Scanning Mode -->
+  <div class="scanner-container" *ngIf="isScanning">
+    <!-- Scanner Header -->
+    <div class="scanner-header">
+      <ion-button fill="clear" (click)="cancelScan()" class="back-btn">
+        <ion-icon name="arrow-back" slot="icon-only" color="light"></ion-icon>
+      </ion-button>
+      <h2 class="scanner-title">
+        {{ scanMode === 'check-in' ? 'สแกนเข้างาน' : 'สแกนออกงาน' }}
+      </h2>
+      <div class="scanner-title-spacer"></div>
+    </div>
+
+    <!-- Mode Badge -->
+    <div
+      class="scanner-mode-badge"
+      [class.check-in-mode]="scanMode === 'check-in'"
+      [class.check-out-mode]="scanMode === 'check-out'"
+    >
+      <ion-icon
+        [name]="scanMode === 'check-in' ? 'log-in-outline' : 'log-out-outline'"
+      ></ion-icon>
+      <span>{{ scanMode === 'check-in' ? 'CHECK IN' : 'CHECK OUT' }}</span>
+    </div>
+
+    <!-- Live Camera -->
+    <div class="camera-wrapper">
+      <app-live-camera
+        [mode]="scanMode"
+        (onFaceDetected)="onFaceDetected($event)"
+        (onCapture)="onPhotoCaptured($event)"
+        (onMatchError)="onMatchError($event)"
+        (onNoFace)="onNoFace()"
+        (onNoFaceTimeout)="onNoFaceTimeout()"
+      >
+      </app-live-camera>
+    </div>
+
+    <!-- Scanner Instruction -->
+    <div class="scanner-instruction">
+      <ion-icon name="scan-outline"></ion-icon>
+      <p>วางใบหน้าให้อยู่ในกรอบ</p>
+    </div>
+
+    <!-- Cancel Button -->
+    <div class="scanner-actions">
+      <ion-button
+        expand="block"
+        color="medium"
+        fill="outline"
+        (click)="cancelScan()"
+        class="cancel-scan-btn"
+      >
+        <ion-icon name="close-outline" slot="start"></ion-icon>
+        ยกเลิก
+      </ion-button>
+    </div>
+  </div>
 </ion-content>

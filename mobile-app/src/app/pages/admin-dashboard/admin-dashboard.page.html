@@ -1,0 +1,136 @@
+<ion-content [fullscreen]="true">
+  <div class="admin-container">
+    <!-- Admin Header -->
+    <div class="admin-header">
+      <div class="header-top">
+        <ion-button fill="clear" (click)="logout()" class="header-btn">
+          <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+        <h1 class="header-title">ระบบจัดการ</h1>
+        <ion-button fill="clear" (click)="goToSettings()" class="header-btn">
+          <ion-icon name="settings-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+      <div class="session-badge">
+        <ion-icon name="time-outline"></ion-icon>
+        <span>เซสชันหมดอายุใน {{ sessionTimeRemaining }} นาที</span>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-section">
+      <div class="stat-card stat-employees">
+        <div class="stat-icon-bg">
+          <ion-icon name="people"></ion-icon>
+        </div>
+        <div class="stat-value">{{ totalEmployees }}</div>
+        <div class="stat-label">พนักงานทั้งหมด</div>
+      </div>
+
+      <div class="stat-card stat-attendance">
+        <div class="stat-icon-bg">
+          <ion-icon name="checkmark-circle"></ion-icon>
+        </div>
+        <div class="stat-value">{{ todayAttendance }}</div>
+        <div class="stat-label">เข้างานวันนี้</div>
+      </div>
+
+      <div class="stat-card stat-records">
+        <div class="stat-icon-bg">
+          <ion-icon name="document-text"></ion-icon>
+        </div>
+        <div class="stat-value">{{ totalRecords }}</div>
+        <div class="stat-label">บันทึกทั้งหมด</div>
+      </div>
+    </div>
+
+    <!-- Menu Section -->
+    <div class="menu-section">
+      <h2 class="section-title">เมนูจัดการ</h2>
+
+      <div class="menu-grid">
+        <button class="menu-card" (click)="navigateTo('/register')">
+          <div class="menu-icon-wrapper color-green">
+            <ion-icon name="person-add"></ion-icon>
+          </div>
+          <span class="menu-label">ลงทะเบียน<br />พนักงาน</span>
+        </button>
+
+        <button class="menu-card" (click)="navigateTo('/employees')">
+          <div class="menu-icon-wrapper color-blue">
+            <ion-icon name="people"></ion-icon>
+          </div>
+          <span class="menu-label">รายชื่อ<br />พนักงาน</span>
+        </button>
+
+        <button class="menu-card" (click)="navigateTo('/report')">
+          <div class="menu-icon-wrapper color-purple">
+            <ion-icon name="bar-chart"></ion-icon>
+          </div>
+          <span class="menu-label">รายงาน<br />การเข้างาน</span>
+        </button>
+
+        <button class="menu-card" (click)="navigateTo('/history')">
+          <div class="menu-icon-wrapper color-orange">
+            <ion-icon name="time"></ion-icon>
+          </div>
+          <span class="menu-label">ประวัติ<br />ทั้งหมด</span>
+        </button>
+
+        <button class="menu-card" (click)="navigateTo('/company-profile')">
+          <div class="menu-icon-wrapper color-teal">
+            <ion-icon name="business"></ion-icon>
+          </div>
+          <span class="menu-label">โปรไฟล์<br />บริษัท</span>
+        </button>
+
+        <button class="menu-card" (click)="goToSettings()">
+          <div class="menu-icon-wrapper color-gray">
+            <ion-icon name="settings"></ion-icon>
+          </div>
+          <span class="menu-label">ตั้งค่า<br />ระบบ</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Sync Section -->
+    <div class="sync-section">
+      <div class="sync-card">
+        <div class="sync-info">
+          <ion-icon
+            name="cloud-upload-outline"
+            [color]="isSyncing ? 'primary' : 'medium'"
+            class="sync-icon"
+            [class.spinning]="isSyncing"
+          ></ion-icon>
+          <div class="sync-text">
+            <span class="sync-label">ซิงค์ล่าสุด</span>
+            <span class="sync-time">{{ lastSyncTime }}</span>
+          </div>
+        </div>
+        <ion-button
+          size="small"
+          fill="outline"
+          (click)="manualSync()"
+          [disabled]="isSyncing"
+        >
+          <ion-icon name="sync" slot="start"></ion-icon>
+          {{ isSyncing ? 'กำลังซิงค์...' : 'ซิงค์' }}
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Logout -->
+    <div class="logout-section">
+      <ion-button
+        expand="block"
+        color="danger"
+        fill="outline"
+        (click)="logout()"
+      >
+        <ion-icon name="log-out" slot="start"></ion-icon>
+        ออกจากโหมด Admin
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

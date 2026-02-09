@@ -1,0 +1,58 @@
+<ion-content [fullscreen]="true">
+  <div class="login-container">
+    <!-- Back Button -->
+    <div class="login-header">
+      <ion-button fill="clear" (click)="goBack()" class="back-button">
+        <ion-icon name="arrow-back" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
+
+    <!-- Lock Icon -->
+    <div class="lock-section">
+      <div
+        class="lock-icon-wrapper"
+        [class.error]="isError"
+        [class.success]="isSuccess"
+      >
+        <ion-icon [name]="isSuccess ? 'lock-open' : 'lock-closed'"></ion-icon>
+      </div>
+      <h1 class="login-title">ระบบผู้ดูแล</h1>
+      <p class="login-subtitle">กรุณาใส่รหัส PIN เพื่อเข้าสู่ระบบ</p>
+    </div>
+
+    <!-- PIN Display -->
+    <div class="pin-display">
+      <div
+        class="pin-dot"
+        *ngFor="let dot of pinDots; let i = index"
+        [class.filled]="i < pin.length"
+        [class.error]="isError"
+      ></div>
+    </div>
+
+    <!-- Error Message -->
+    <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+    <!-- Number Pad -->
+    <div class="numpad">
+      <div class="numpad-row" *ngFor="let row of numpadRows">
+        <button
+          class="numpad-btn"
+          *ngFor="let key of row"
+          (click)="onKeyPress(key)"
+          [class.empty]="key === ''"
+          [disabled]="key === '' || isProcessing"
+        >
+          <span *ngIf="key !== 'backspace' && key !== ''">{{ key }}</span>
+          <ion-icon
+            *ngIf="key === 'backspace'"
+            name="backspace-outline"
+          ></ion-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Default PIN Hint -->
+    <p class="pin-hint">รหัส PIN เริ่มต้น: 000000</p>
+  </div>
+</ion-content>

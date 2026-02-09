@@ -1,0 +1,47 @@
+<ion-content class="notification-content">
+  <div class="notification-wrapper">
+    <!-- Icon แสดงสถานะ -->
+    <div class="notification-icon" [ngClass]="iconClass">
+      <ion-icon [name]="iconName" size="large"></ion-icon>
+    </div>
+
+    <!-- ข้อความหลัก -->
+    <h1 class="notification-title" [ngClass]="titleClass">{{ title }}</h1>
+
+    <!-- ข้อความรายละเอียด -->
+    <p class="notification-message">{{ message }}</p>
+
+    <!-- ข้อมูลเพิ่มเติม (ถ้ามี) -->
+    <div *ngIf="details" class="notification-details">
+      <div class="detail-row" *ngIf="details.employeeName">
+        <ion-icon name="person" color="primary"></ion-icon>
+        <span>{{ details.employeeName }}</span>
+      </div>
+      <div class="detail-row" *ngIf="details.confidence">
+        <ion-icon name="shield-checkmark" color="success"></ion-icon>
+        <span>ความแม่นยำ {{ details.confidence }}%</span>
+      </div>
+      <div class="detail-row" *ngIf="details.time">
+        <ion-icon name="time" color="tertiary"></ion-icon>
+        <span>{{ details.time }}</span>
+      </div>
+    </div>
+
+    <!-- ปุ่มปิด -->
+    <ion-button
+      expand="block"
+      (click)="close()"
+      class="close-button"
+      [color]="buttonColor"
+      size="large"
+    >
+      กลับหน้าหลัก
+    </ion-button>
+
+    <!-- แสดง Countdown -->
+    <div class="countdown-text">
+      <ion-icon name="timer-outline"></ion-icon>
+      กลับอัตโนมัติใน {{ countdown }} วินาที
+    </div>
+  </div>
+</ion-content>

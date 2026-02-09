@@ -1,24 +1,41 @@
 <ion-content>
   <ion-list>
-    <ion-item (click)="onRefreshFromApi()" [disabled]="isLoading">
+    <ion-item button (click)="goToAdminSettings()">
+      <ion-icon name="settings" slot="start" color="primary"></ion-icon>
       <ion-label>
-        <h2>อัปเดตจากเซิร์ฟเวอร์</h2>
-        <p>{{ isLoading ? 'กำลังอัปเดต...' : 'ดึงข้อมูลตารางเวลาล่าสุด' }}</p>
+        <h2>ตั้งค่าระบบ (Admin)</h2>
+        <p>จัดการการตั้งค่าแอปพลิเคชัน</p>
       </ion-label>
-      <ion-spinner *ngIf="isLoading" slot="end" color="primary"></ion-spinner>
     </ion-item>
 
     <ion-item (click)="closePopover()">
+      <ion-icon
+        name="information-circle"
+        slot="start"
+        color="medium"
+      ></ion-icon>
       <ion-label>
         <h2>ข้อมูลระบบ</h2>
-        <p>{{ isOfflineMode ? 'โหมดออฟไลน์: 8:00-17:00' : 'โหมดออนไลน์: ดึงจากเซิร์ฟเวอร์' }}</p>
+        <p>
+          {{ isOfflineMode ? 'โหมดออฟไลน์: 8:00-17:00' : 'โหมดออนไลน์:
+          ดึงจากเซิร์ฟเวอร์' }}
+        </p>
       </ion-label>
     </ion-item>
 
-    <ion-item (click)="closePopover()">
+    <ion-item button (click)="onLogout()" *ngIf="isAuthenticated">
+      <ion-icon name="log-out" slot="start" color="danger"></ion-icon>
       <ion-label>
-        <h2>ความช่วยเหลือ</h2>
-        <p>ดูคู่มือการใช้งาน</p>
+        <h2>ออกจากระบบ Admin</h2>
+        <p>ล็อกเอาต์จากการเข้าถึงการตั้งค่า</p>
+      </ion-label>
+    </ion-item>
+
+    <ion-item button (click)="goToHome()">
+      <ion-icon name="home" slot="start" color="success"></ion-icon>
+      <ion-label>
+        <h2>กลับสู่หน้าหลัก</h2>
+        <p>ย้อนกลับไปยังหน้าแรก</p>
       </ion-label>
     </ion-item>
   </ion-list>

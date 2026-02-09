@@ -7,6 +7,7 @@ import {
 } from "@capacitor/camera";
 import { Storage } from "@ionic/storage-angular";
 import { PermissionService, PermissionResult } from "./permission.service";
+import { SettingsService } from "./settings.service";
 import * as faceapi from "@vladmandic/face-api";
 
 export interface FaceDetectionResult {
@@ -16,6 +17,7 @@ export interface FaceDetectionResult {
   error?: string;
   warning?: string;
   landmarks?: any;
+  box?: { x: number; y: number; width: number; height: number };
 }
 
 export interface FaceIdentificationResult {
@@ -27,6 +29,16 @@ export interface FaceIdentificationResult {
   message?: string;
   error?: string;
   faceData?: any;
+  debugInfo?: {
+    totalUsers: number;
+    bestMatch: string;
+    bestMatchId: string;
+    distance: string;
+    threshold: string;
+    similarity: string;
+    minRequired: string;
+    reason: string;
+  };
 }
 
 @Injectable({
@@ -39,7 +51,8 @@ export class FaceDetectionService {
 
   constructor(
     private storage: Storage,
-    private permissionService: PermissionService
+    private permissionService: PermissionService,
+    private settingsService: SettingsService
   ) {
     this.init();
   }
@@ -390,15 +403,27 @@ export class FaceDetectionService {
       // Get 128-dimensional face descriptor (the key improvement!)
       const descriptor = Array.from(detection.descriptor);
 
+      // Get minimum confidence from settings
+      const settings = await this.settingsService.getFaceDetectionSettings();
+      const minConfidence = settings.minConfidence;
+
       // Check if confidence is below threshold
-      if (confidence < 0.8) {
+      if (confidence < minConfidence) {
         return {
           detected: true,
           confidence,
           descriptor,
+          box: {
+            x: detection.detection.box.x,
+            y: detection.detection.box.y,
+            width: detection.detection.box.width,
+            height: detection.detection.box.height,
+          },
           warning: `Confidence ${Math.round(
             confidence * 100
-          )}% ต่ำกว่า 80% กรุณาถ่ายรูปใหม่เพื่อความแม่นยำ`,
+          )}% ต่ำกว่า ${Math.round(
+            minConfidence * 100
+          )}% กรุณาถ่ายรูปใหม่เพื่อความแม่นยำ`,
         };
       }
 
@@ -407,6 +432,12 @@ export class FaceDetectionService {
         confidence,
         descriptor,
         landmarks: detection.landmarks,
+        box: {
+          x: detection.detection.box.x,
+          y: detection.detection.box.y,
+          width: detection.detection.box.width,
+          height: detection.detection.box.height,
+        },
       };
     } catch (error: any) {
       console.error("Error detecting face:", error);
@@ -443,13 +474,27 @@ export class FaceDetectionService {
 
       const inputDescriptor = new Float32Array(descriptor);
 
+      console.log(
+        "🔍 Face Identification - Total registered users:",
+        users.length
+      );
+
       for (const user of users) {
-        if (!user.faceDescriptor || user.status === "inactive") continue;
+        if (!user.faceDescriptor || user.status === "inactive") {
+          console.log(`⏭️ Skip user: ${user.name} (no descriptor or inactive)`);
+          continue;
+        }
 
         const storedDescriptor = new Float32Array(user.faceDescriptor);
         const distance = faceapi.euclideanDistance(
           inputDescriptor,
           storedDescriptor
+        );
+
+        console.log(
+          `📏 Distance for ${user.name} (${
+            user.employeeId
+          }): ${distance.toFixed(4)}`
         );
 
         if (distance < lowestDistance) {
@@ -458,27 +503,77 @@ export class FaceDetectionService {
         }
       }
 
-      // Threshold: 0.6 is recommended by face-api.js (lower = stricter)
-      // Distance < 0.6 = same person, Distance > 0.6 = different person
-      const MATCH_THRESHOLD = 0.6;
+      // Get thresholds from settings
+      const settings = await this.settingsService.getFaceDetectionSettings();
+      const MATCH_THRESHOLD = settings.matchDistanceThreshold;
+      const MIN_SIMILARITY = settings.minSimilarityPercent;
+
+      console.log(`⚙️ Settings - Match Threshold: ${MATCH_THRESHOLD}`);
+      console.log(`⚙️ Settings - Min Similarity: ${MIN_SIMILARITY}%`);
+      console.log(`🎯 Best Match: ${bestMatch?.name || "None"}`);
+      console.log(`📊 Lowest Distance: ${lowestDistance.toFixed(4)}`);
 
       if (lowestDistance < MATCH_THRESHOLD && bestMatch) {
-        // Convert distance to similarity percentage (0.6 -> 0%, 0 -> 100%)
+        // Convert distance to similarity percentage
         const similarity = Math.max(0, 1 - lowestDistance / MATCH_THRESHOLD);
+        const similarityPercent = similarity * 100;
 
-        return {
-          identified: true,
-          userId: bestMatch.id,
-          userName: bestMatch.name,
-          employeeId: bestMatch.employeeId,
-          similarity: similarity,
-          faceData: bestMatch,
-        };
+        console.log(
+          `✅ Match candidate - Similarity: ${similarityPercent.toFixed(1)}%`
+        );
+        console.log(
+          `📋 Required minimum: ${(MIN_SIMILARITY * 100).toFixed(1)}%`
+        );
+
+        // ต้องมีความคล้ายกันตามที่ตั้งค่าไว้
+        if (similarity >= MIN_SIMILARITY) {
+          console.log(
+            `✅ MATCH FOUND: ${bestMatch.name} (${similarityPercent.toFixed(
+              1
+            )}%)`
+          );
+          return {
+            identified: true,
+            userId: bestMatch.id,
+            userName: bestMatch.name,
+            employeeId: bestMatch.employeeId,
+            similarity: similarity,
+            faceData: bestMatch,
+          };
+        } else {
+          console.log(
+            `❌ SIMILARITY TOO LOW: ${similarityPercent.toFixed(1)}% < ${(
+              MIN_SIMILARITY * 100
+            ).toFixed(1)}%`
+          );
+        }
+      } else {
+        console.log(
+          `❌ DISTANCE TOO HIGH: ${lowestDistance.toFixed(
+            4
+          )} >= ${MATCH_THRESHOLD}`
+        );
       }
 
       return {
         identified: false,
         message: "ไม่พบใบหน้าที่ตรงกันในระบบ",
+        debugInfo: {
+          totalUsers: users.length,
+          bestMatch: bestMatch?.name || "ไม่มี",
+          bestMatchId: bestMatch?.employeeId || "-",
+          distance: lowestDistance.toFixed(4),
+          threshold: MATCH_THRESHOLD.toFixed(4),
+          similarity:
+            lowestDistance < MATCH_THRESHOLD
+              ? ((1 - lowestDistance / MATCH_THRESHOLD) * 100).toFixed(1) + "%"
+              : "0.0%",
+          minRequired: (MIN_SIMILARITY * 100).toFixed(1) + "%",
+          reason:
+            lowestDistance >= MATCH_THRESHOLD
+              ? "ระยะห่างมากเกินไป"
+              : "ความคล้ายต่ำเกินไป",
+        },
       };
     } catch (error: any) {
       console.error("Error identifying face:", error);
@@ -493,7 +588,10 @@ export class FaceDetectionService {
    * Compare two face descriptors using Euclidean distance
    * Returns similarity score (0-1, higher = more similar)
    */
-  compareFaces(descriptor1: number[], descriptor2: number[]): number {
+  async compareFaces(
+    descriptor1: number[],
+    descriptor2: number[]
+  ): Promise<number> {
     if (
       !descriptor1 ||
       !descriptor2 ||
@@ -507,9 +605,13 @@ export class FaceDetectionService {
 
     const distance = faceapi.euclideanDistance(d1, d2);
 
-    // Convert distance to similarity (0.6 threshold)
-    // distance 0 = similarity 1, distance >= 0.6 = similarity 0
-    return Math.max(0, 1 - distance / 0.6);
+    // Get threshold from settings
+    const settings = await this.settingsService.getFaceDetectionSettings();
+    const threshold = settings.matchDistanceThreshold;
+
+    // Convert distance to similarity
+    // distance 0 = similarity 1, distance >= threshold = similarity 0
+    return Math.max(0, 1 - distance / threshold);
   }
 
   /**
@@ -562,7 +664,7 @@ export class FaceDetectionService {
   /**
    * Draw face detection overlay on canvas
    */
-  drawFaceOverlay(
+  async drawFaceOverlay(
     canvas: HTMLCanvasElement,
     video: HTMLVideoElement,
     detection: {
@@ -571,7 +673,7 @@ export class FaceDetectionService {
       box?: { x: number; y: number; width: number; height: number };
     },
     isMirrored: boolean = true
-  ): void {
+  ): Promise<void> {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -592,14 +694,18 @@ export class FaceDetectionService {
       x = canvas.width - box.x - box.width;
     }
 
+    // Get threshold from settings for color coding
+    const settings = await this.settingsService.getFaceDetectionSettings();
+    const threshold = settings.minConfidence;
+
     // Draw bounding box
-    ctx.strokeStyle = detection.confidence > 0.8 ? "#00ff00" : "#ffff00";
+    ctx.strokeStyle = detection.confidence >= threshold ? "#00ff00" : "#ffff00";
     ctx.lineWidth = 3;
     ctx.strokeRect(x, box.y, box.width, box.height);
 
     // Draw confidence label
     const label = `${Math.round(detection.confidence * 100)}%`;
-    ctx.fillStyle = detection.confidence > 0.8 ? "#00ff00" : "#ffff00";
+    ctx.fillStyle = detection.confidence >= threshold ? "#00ff00" : "#ffff00";
     ctx.font = "bold 16px Arial";
     ctx.fillText(label, x + 5, box.y - 10);
 

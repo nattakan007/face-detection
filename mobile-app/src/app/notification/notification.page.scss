@@ -1,0 +1,177 @@
+.notification-content {
+  --background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);
+}
+
+.notification-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 32px;
+  text-align: center;
+}
+
+.notification-icon {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  animation: scaleIn 0.5s ease-out;
+  
+  ion-icon {
+    font-size: 72px;
+    color: white;
+  }
+}
+
+.icon-success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+}
+
+.icon-error {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
+}
+
+.icon-warning {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+}
+
+.notification-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+.title-success {
+  color: #059669;
+}
+
+.title-error {
+  color: #dc2626;
+}
+
+.title-warning {
+  color: #d97706;
+}
+
+.notification-message {
+  font-size: 1.2rem;
+  color: #475569;
+  margin: 0 0 24px 0;
+  line-height: 1.6;
+  animation: fadeInUp 0.6s ease-out 0.3s both;
+}
+
+.notification-details {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 0 0 32px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  animation: fadeInUp 0.6s ease-out 0.4s both;
+
+  .detail-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    font-size: 1rem;
+    color: #334155;
+    text-align: left;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    ion-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    span {
+      font-weight: 500;
+    }
+  }
+
+  p {
+    margin: 8px 0;
+    font-size: 1rem;
+    color: #334155;
+    text-align: left;
+
+    strong {
+      color: #1e293b;
+      margin-right: 8px;
+    }
+  }
+}
+
+.close-button {
+  --border-radius: 12px;
+  height: 56px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  animation: fadeInUp 0.6s ease-out 0.5s both;
+}
+
+.countdown-text {
+  font-size: 0.9rem;
+  color: #64748b;
+  animation: fadeInUp 0.6s ease-out 0.6s both;
+}
+
+// Animations
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// Responsive
+@media (max-width: 480px) {
+  .notification-icon {
+    width: 100px;
+    height: 100px;
+    
+    ion-icon {
+      font-size: 60px;
+    }
+  }
+  
+  .notification-title {
+    font-size: 1.5rem;
+  }
+  
+  .notification-message {
+    font-size: 1rem;
+  }
+  
+  .notification-details p {
+    font-size: 0.9rem;
+  }
+}

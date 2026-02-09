@@ -1,0 +1,159 @@
+.pin-entry-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 20px;
+}
+
+.mode-info {
+  text-align: center;
+  margin-bottom: 30px;
+
+  ion-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+  }
+
+  p {
+    font-size: 16px;
+    color: var(--ion-color-medium);
+    margin: 0;
+  }
+}
+
+.pin-display {
+  margin-bottom: 30px;
+  text-align: center;
+
+  .pin-label {
+    font-size: 14px;
+    color: var(--ion-color-medium);
+    margin-bottom: 10px;
+  }
+
+  .pin-dots {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 8px;
+
+    span {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--ion-color-medium);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      transition: all 0.2s ease;
+
+      &.filled {
+        background-color: var(--ion-color-primary);
+        border-color: var(--ion-color-primary);
+        color: white;
+      }
+
+      &.active {
+        border-color: var(--ion-color-primary);
+        transform: scale(1.1);
+      }
+    }
+  }
+
+  .pin-hint {
+    font-size: 12px;
+    color: var(--ion-color-medium-shade);
+  }
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ion-color-danger);
+  font-size: 14px;
+  margin-bottom: 20px;
+  padding: 10px;
+  background: var(--ion-color-danger-tint);
+  border-radius: 8px;
+
+  ion-icon {
+    font-size: 20px;
+  }
+}
+
+.number-pad {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+
+  .number-row {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .number-btn {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: none;
+    background: var(--ion-color-light);
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--ion-color-dark);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:active {
+      background: var(--ion-color-primary);
+      color: white;
+      transform: scale(0.95);
+    }
+
+    &.empty {
+      visibility: hidden;
+    }
+
+    &.backspace {
+      background: var(--ion-color-light-shade);
+      
+      ion-icon {
+        font-size: 28px;
+      }
+
+      &:active {
+        background: var(--ion-color-medium);
+      }
+    }
+  }
+}
+
+.submit-btn {
+  margin-top: 20px;
+  --border-radius: 12px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+// Tablet/Desktop
+@media (min-width: 768px) {
+  .number-pad .number-btn {
+    width: 80px;
+    height: 80px;
+    font-size: 28px;
+  }
+
+  .pin-display .pin-dots span {
+    width: 24px;
+    height: 24px;
+    font-size: 28px;
+  }
+}

@@ -1,0 +1,77 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>หน้าแจ้งเตือนการสแกนใบหน้า</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="notification-container">
+    <!-- Icon Section -->
+    <div
+      class="icon-circle"
+      [ngClass]="{
+      'icon-success': type === 'success',
+      'icon-error': type === 'error',
+      'icon-warning': type === 'warning'
+    }"
+    >
+      <ion-icon
+        [name]="iconName"
+        [ngClass]="{
+          'success-icon': type === 'success',
+          'error-icon': type === 'error',
+          'warning-icon': type === 'warning'
+        }"
+      >
+      </ion-icon>
+    </div>
+
+    <!-- Title -->
+    <h1
+      class="notification-title"
+      [ngClass]="{'warning-title': type === 'warning'}"
+    >
+      {{ title }}
+    </h1>
+
+    <!-- Message -->
+    <p class="notification-message">{{ message }}</p>
+
+    <!-- Details (Optional) -->
+    <div class="notification-details" *ngIf="details">
+      <div class="detail-row" *ngIf="details.employeeName">
+        <ion-icon name="person" color="primary"></ion-icon>
+        <span>{{ details.employeeName }}</span>
+      </div>
+      <div class="detail-row" *ngIf="details.employeeId">
+        <ion-icon name="id-card" color="secondary"></ion-icon>
+        <span>รหัส {{ details.employeeId }}</span>
+      </div>
+      <div class="detail-row" *ngIf="details.confidence">
+        <ion-icon name="shield-checkmark" color="success"></ion-icon>
+        <span>ความแม่นยำ {{ details.confidence }}%</span>
+      </div>
+      <div class="detail-row" *ngIf="details.time">
+        <ion-icon name="time" color="tertiary"></ion-icon>
+        <span>{{ details.time }}</span>
+      </div>
+    </div>
+
+    <!-- Auto-close countdown -->
+    <div class="countdown-text">
+      <ion-icon name="time-outline"></ion-icon>
+      <span>ปิดอัตโนมัติใน {{ countdown }} วินาที</span>
+    </div>
+
+    <!-- Close Button -->
+    <ion-button
+      expand="block"
+      (click)="close()"
+      class="close-btn"
+      [color]="type === 'success' ? 'success' : type === 'error' ? 'danger' : 'warning'"
+    >
+      <ion-icon name="arrow-back-circle" slot="start"></ion-icon>
+      กลับหน้าหลัก
+    </ion-button>
+  </div>
+</ion-content>

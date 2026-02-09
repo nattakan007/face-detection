@@ -1,20 +1,28 @@
 {
   "name": "face-attendance-system",
   "version": "1.0.0",
-  "description": "Face Attendance System with Mobile App, API, and Web Dashboard",
+  "description": "Face Attendance System with Mobile App, API, Web Dashboard, and Flutter App",
   "scripts": {
     "install:all": "npm run install:mobile && npm run install:api && npm run install:web",
     "install:mobile": "cd mobile-app && npm install",
     "install:api": "cd api-server && npm install",
     "install:web": "cd web-dashboard && npm install",
+    "install:flutter": "cd flutter-app && flutter pub get",
     "dev:mobile": "cd mobile-app && ionic serve",
     "dev:api": "cd api-server && npm run start:dev",
     "dev:web": "cd web-dashboard && ng serve",
+    "dev:flutter": "cd flutter-app && flutter run",
     "build:all": "npm run build:mobile && npm run build:api && npm run build:web",
     "build:mobile": "cd mobile-app && ionic build",
+    "build:mobile:apk": "cd mobile-app/android && gradlew assembleDebug",
+    "build:mobile:apk:release": "cd mobile-app/android && gradlew assembleRelease",
     "build:api": "cd api-server && npm run build",
     "build:web": "cd web-dashboard && ng build",
-    "test:all": "npm run test:mobile && npm run test:api && npm run test:web"
+    "build:flutter": "cd flutter-app && flutter build apk --release",
+    "build:flutter:debug": "cd flutter-app && flutter build apk --debug",
+    "build:flutter:web": "cd flutter-app && flutter build web",
+    "test:all": "npm run test:mobile && npm run test:api && npm run test:web",
+    "test:flutter": "cd flutter-app && flutter test"
   },
   "devDependencies": {
     "concurrently": "^8.2.0"

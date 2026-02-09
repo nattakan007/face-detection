@@ -1,5 +1,19 @@
 <ion-card>
   <ion-card-content>
+    <!-- Test Upload Button - แสดงเฉพาะบน browser -->
+    <div *ngIf="!isCameraActive && showTestButton" class="test-controls">
+      <ion-button
+        expand="block"
+        color="secondary"
+        (click)="testWithImageUpload()"
+        size="small"
+      >
+        <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+        🧪 ทดสอบด้วยการอัปโหลดรูป
+      </ion-button>
+      <p class="test-note">อัปโหลดรูปพนักงานเพื่อทดสอบการเปรียบเทียบใบหน้า</p>
+    </div>
+
     <!-- Camera View -->
     <div class="camera-wrapper">
       <video
@@ -32,33 +46,39 @@
         <p>กำลังเปิดกล้อง...</p>
       </div>
 
-      <!-- Real-time Detection Status Badge -->
+      <!-- Real-time Detection Status Badge with Clear Instructions -->
       <div
         class="realtime-status"
         *ngIf="isCameraActive && isRealTimeDetecting"
       >
+        <!-- ไม่พบใบหน้า - แสดงคำแนะนำ -->
         <div
-          class="status-badge"
-          [class.detected]="realTimeDetection?.detected"
-          [class.not-detected]="!realTimeDetection?.detected"
+          class="status-badge ready-to-scan"
+          *ngIf="!realTimeDetection?.detected"
         >
-          <ion-icon
-            [name]="
-              realTimeDetection?.detected ? 'checkmark-circle' : 'scan-outline'
-            "
-          ></ion-icon>
-          <span *ngIf="realTimeDetection?.detected"
-            >พบใบหน้า
-            {{ (realTimeDetection.confidence * 100).toFixed(0) }}%</span
-          >
-          <span *ngIf="!realTimeDetection?.detected">หาใบหน้า...</span>
+          <ion-icon name="person-outline"></ion-icon>
+          <span>กรุณาวางหน้าตรงกลางกล้อง</span>
         </div>
-      </div>
-
-      <!-- Face Detection Overlay (when processing capture) -->
-      <div class="detection-overlay" *ngIf="isScanning && isCameraActive">
-        <ion-spinner name="crescent" color="light"></ion-spinner>
-        <p>กำลังระบุตัวตน...</p>
+        <!-- พบใบหน้าแต่ความแม่นยำยังไม่ถึง 80% -->
+        <div
+          class="status-badge scanning"
+          *ngIf="
+            realTimeDetection?.detected && realTimeDetection.confidence < 0.8
+          "
+        >
+          <ion-icon name="scan-outline"></ion-icon>
+          <span>กำลังจับภาพ...</span>
+        </div>
+        <!-- ความแม่นยำถึง 80% ขึ้นไป - จะถ่ายอัตโนมัติ -->
+        <div
+          class="status-badge detected"
+          *ngIf="
+            realTimeDetection?.detected && realTimeDetection.confidence >= 0.8
+          "
+        >
+          <ion-icon name="checkmark-circle"></ion-icon>
+          <span>กำลังบันทึก...</span>
+        </div>
       </div>
     </div>
 
@@ -128,7 +148,22 @@
     </div>
 
     <!-- Scan Button -->
+    <!-- Show restart button when scan is completed (camera stopped) -->
     <ion-button
+      *ngIf="scanCompleted && !isCameraActive"
+      expand="block"
+      size="large"
+      (click)="startNewScan()"
+      color="primary"
+      class="capture-button"
+    >
+      <ion-icon name="scan" slot="start"></ion-icon>
+      สแกนใบหน้า
+    </ion-button>
+
+    <!-- Show normal button when camera is active or not yet started -->
+    <ion-button
+      *ngIf="!scanCompleted || isCameraActive"
       expand="block"
       size="large"
       (click)="isPaused ? resetAndRescan() : startScanning()"

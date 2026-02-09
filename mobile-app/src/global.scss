@@ -27,8 +27,8 @@
 
 /* Bright Modern Theme */
 :root {
-  --ion-background-color: #ffffff;
-  --ion-background-color-rgb: 255, 255, 255;
+  --ion-background-color: #f8fafc;
+  --ion-background-color-rgb: 248, 250, 252;
 
   --ion-text-color: #1e293b;
   --ion-text-color-rgb: 30, 41, 59;
@@ -37,14 +37,15 @@
 
   --ion-card-background: #ffffff;
   --ion-toolbar-background: var(--ion-color-primary);
+  --ion-toolbar-color: #ffffff;
 }
 
 :host {
-  --background: #ffffff;
+  --background: #f8fafc;
 }
 
 ion-card {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   border-radius: 16px;
 }
 
@@ -59,7 +60,7 @@ ion-card-header {
 }
 
 ion-content {
-  --background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  --background: #f8fafc;
 }
 
 ion-fab-button {
@@ -69,4 +70,14 @@ ion-fab-button {
 ion-fab-button ion-icon {
   font-size: 1.5rem !important;
   color: white !important;
+}
+
+/* Improve list items */
+ion-item {
+  --border-radius: 8px;
+}
+
+/* Better back button */
+ion-back-button {
+  --color: #ffffff;
 }

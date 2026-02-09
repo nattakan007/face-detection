@@ -13,7 +13,7 @@
     <ion-card class="photo-card">
       <ion-card-header>
         <ion-card-title
-          >ถ่ายรูปโปรไฟล์ <span style="color: #ef4444">*</span></ion-card-title
+          >ถ่ายรูปโปรไฟล์ <span class="required">*</span></ion-card-title
         >
         <ion-card-subtitle>
           {{ profilePhoto ? 'ถ่ายรูปสำเร็จ! กรุณากรอกข้อมูลด้านล่าง' :
@@ -73,16 +73,12 @@
     <ion-card class="form-card">
       <ion-card-header>
         <ion-card-title>ข้อมูลส่วนตัว</ion-card-title>
-        <ion-card-subtitle style="color: #ef4444; font-size: 0.85rem">
-          <ion-icon name="alert-circle-outline"></ion-icon>
-          ข้อมูลที่จำเป็น: ชื่อ-นามสกุล, รูปถ่ายใบหน้า
-        </ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>
         <form #registrationForm="ngForm">
           <ion-item>
             <ion-label position="stacked"
-              >ชื่อ-นามสกุล <span style="color: #ef4444">*</span></ion-label
+              >ชื่อ-นามสกุล <span class="required">*</span></ion-label
             >
             <ion-input
               type="text"
@@ -135,6 +131,15 @@
         </form>
       </ion-card-content>
     </ion-card>
+
+    <!-- Required Fields Note -->
+    <div class="required-note">
+      <ion-icon name="information-circle"></ion-icon>
+      <span
+        >ข้อมูลที่มีเครื่องหมาย
+        <span class="required">*</span> จำเป็นต้องกรอก</span
+      >
+    </div>
 
     <!-- Action Buttons -->
     <div class="button-section">

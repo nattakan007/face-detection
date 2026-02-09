@@ -1,0 +1,129 @@
+.profile-container {
+  padding: 16px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+// ============ LOGO SECTION ============
+.logo-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  padding-top: 8px;
+
+  .company-logo {
+    width: 120px;
+    height: 120px;
+    border-radius: 20px;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    border: 2px dashed #cbd5e1;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: var(--ion-color-primary);
+      background: #e0f2fe;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .logo-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: #94a3b8;
+
+      ion-icon {
+        font-size: 36px;
+      }
+
+      span {
+        font-size: 0.75rem;
+      }
+    }
+
+    .logo-edit-badge {
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--ion-color-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+      ion-icon {
+        font-size: 16px;
+        color: #ffffff;
+      }
+    }
+  }
+}
+
+// ============ FORM CARD ============
+.form-card {
+  margin-bottom: 16px;
+  border-radius: 16px;
+
+  ion-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+
+    ion-icon {
+      font-size: 20px;
+    }
+  }
+
+  ion-item {
+    --padding-start: 0;
+    margin-bottom: 8px;
+  }
+
+  ion-label {
+    font-weight: 500 !important;
+  }
+
+  .required {
+    color: #ef4444;
+  }
+}
+
+// ============ WORK DAYS ============
+.workdays-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 0 16px;
+
+  ion-chip {
+    cursor: pointer;
+    --background: #f1f5f9;
+  }
+}
+
+// ============ BUTTON SECTION ============
+.button-section {
+  padding: 8px 0 32px;
+
+  ion-button {
+    --border-radius: 12px;
+    font-weight: 600;
+    height: 52px;
+  }
+}

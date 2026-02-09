@@ -1,0 +1,198 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin-dashboard" text=""></ion-back-button>
+    </ion-buttons>
+    <ion-title>รายงานการเข้างาน</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="report-container">
+    <!-- Date Range Filter -->
+    <div class="filter-section">
+      <div class="filter-row">
+        <div class="filter-item">
+          <label>จากวันที่</label>
+          <ion-datetime-button datetime="startDate"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime
+                id="startDate"
+                presentation="date"
+                [(ngModel)]="startDate"
+                (ionChange)="onDateChange()"
+                [max]="today"
+              >
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </div>
+        <div class="filter-item">
+          <label>ถึงวันที่</label>
+          <ion-datetime-button datetime="endDate"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime
+                id="endDate"
+                presentation="date"
+                [(ngModel)]="endDate"
+                (ionChange)="onDateChange()"
+                [max]="today"
+              >
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </div>
+      </div>
+
+      <!-- Quick Filter Buttons -->
+      <div class="quick-filters">
+        <ion-chip
+          [color]="activeFilter === 'today' ? 'primary' : 'medium'"
+          (click)="setQuickFilter('today')"
+          >วันนี้</ion-chip
+        >
+        <ion-chip
+          [color]="activeFilter === 'week' ? 'primary' : 'medium'"
+          (click)="setQuickFilter('week')"
+          >สัปดาห์นี้</ion-chip
+        >
+        <ion-chip
+          [color]="activeFilter === 'month' ? 'primary' : 'medium'"
+          (click)="setQuickFilter('month')"
+          >เดือนนี้</ion-chip
+        >
+        <ion-chip
+          [color]="activeFilter === 'all' ? 'primary' : 'medium'"
+          (click)="setQuickFilter('all')"
+          >ทั้งหมด</ion-chip
+        >
+      </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="summary-section">
+      <div class="summary-card summary-total">
+        <ion-icon name="people"></ion-icon>
+        <div class="summary-value">{{ summary.totalEmployees }}</div>
+        <div class="summary-label">พนักงาน</div>
+      </div>
+      <div class="summary-card summary-checkin">
+        <ion-icon name="log-in"></ion-icon>
+        <div class="summary-value">{{ summary.totalCheckIns }}</div>
+        <div class="summary-label">เข้างาน</div>
+      </div>
+      <div class="summary-card summary-checkout">
+        <ion-icon name="log-out"></ion-icon>
+        <div class="summary-value">{{ summary.totalCheckOuts }}</div>
+        <div class="summary-label">ออกงาน</div>
+      </div>
+      <div class="summary-card summary-late">
+        <ion-icon name="alert-circle"></ion-icon>
+        <div class="summary-value">{{ summary.lateCount }}</div>
+        <div class="summary-label">มาสาย</div>
+      </div>
+    </div>
+
+    <!-- Employee Report Table -->
+    <div class="table-section">
+      <h3 class="section-title">
+        <ion-icon name="list"></ion-icon>
+        รายละเอียดพนักงาน
+      </h3>
+
+      <!-- Employee Filter -->
+      <ion-item class="employee-filter" lines="none">
+        <ion-icon name="search" slot="start" color="medium"></ion-icon>
+        <ion-input
+          [(ngModel)]="searchTerm"
+          (ionInput)="filterEmployees()"
+          placeholder="ค้นหาชื่อพนักงาน..."
+          clearInput
+        >
+        </ion-input>
+      </ion-item>
+
+      <!-- Employee Cards -->
+      <div class="employee-report-list">
+        <div
+          class="employee-report-card"
+          *ngFor="let emp of filteredEmployeeReports"
+        >
+          <div class="emp-header">
+            <ion-avatar>
+              <img
+                [src]="emp.photoPath || 'assets/images/default-avatar.svg'"
+              />
+            </ion-avatar>
+            <div class="emp-info">
+              <h4>{{ emp.name }}</h4>
+              <span>{{ emp.employeeId }} • {{ emp.department || '-' }}</span>
+            </div>
+          </div>
+          <div class="emp-stats">
+            <div class="emp-stat">
+              <span class="stat-num success">{{ emp.checkInCount }}</span>
+              <span class="stat-desc">เข้างาน</span>
+            </div>
+            <div class="emp-stat">
+              <span class="stat-num warning">{{ emp.checkOutCount }}</span>
+              <span class="stat-desc">ออกงาน</span>
+            </div>
+            <div class="emp-stat">
+              <span class="stat-num danger">{{ emp.lateCount }}</span>
+              <span class="stat-desc">มาสาย</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="filteredEmployeeReports.length === 0">
+          <ion-icon name="document-text-outline"></ion-icon>
+          <p>ไม่พบข้อมูลในช่วงเวลาที่เลือก</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Records -->
+    <div class="records-section">
+      <h3 class="section-title">
+        <ion-icon name="time"></ion-icon>
+        รายการล่าสุด
+      </h3>
+
+      <div class="record-list">
+        <div class="record-item" *ngFor="let record of recentRecords">
+          <div
+            class="record-type"
+            [class.check-in]="record.type === 'check-in'"
+            [class.check-out]="record.type === 'check-out'"
+          >
+            <ion-icon
+              [name]="record.type === 'check-in' ? 'log-in' : 'log-out'"
+            ></ion-icon>
+          </div>
+          <div class="record-info">
+            <h4>{{ record.employeeName || 'ไม่ระบุ' }}</h4>
+            <span>{{ record.date }} {{ record.time }}</span>
+          </div>
+          <ion-badge
+            [color]="record.type === 'check-in' ? 'success' : 'warning'"
+          >
+            {{ record.type === 'check-in' ? 'เข้า' : 'ออก' }}
+          </ion-badge>
+        </div>
+
+        <div class="empty-state" *ngIf="recentRecords.length === 0">
+          <ion-icon name="calendar-outline"></ion-icon>
+          <p>ยังไม่มีรายการ</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

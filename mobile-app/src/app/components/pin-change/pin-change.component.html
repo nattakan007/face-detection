@@ -1,0 +1,97 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>เปลี่ยนรหัส PIN</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="pin-change-container">
+    <div class="info-section">
+      <ion-icon name="key-outline" color="primary"></ion-icon>
+      <p>กรุณาใส่รหัส PIN เดิม และตั้งรหัสใหม่</p>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-message" *ngIf="error">
+      <ion-icon name="alert-circle" color="danger"></ion-icon>
+      <span>{{ error }}</span>
+    </div>
+
+    <!-- Old PIN -->
+    <ion-item>
+      <ion-label position="stacked"
+        >รหัส PIN เดิม <span class="required">*</span></ion-label
+      >
+      <ion-input
+        type="password"
+        [(ngModel)]="oldPin"
+        placeholder="ใส่รหัส PIN เดิม"
+        maxlength="6"
+        inputmode="numeric"
+      >
+      </ion-input>
+    </ion-item>
+
+    <!-- New PIN -->
+    <ion-item>
+      <ion-label position="stacked"
+        >รหัส PIN ใหม่ <span class="required">*</span></ion-label
+      >
+      <ion-input
+        type="password"
+        [(ngModel)]="newPin"
+        placeholder="ใส่รหัส PIN ใหม่ (4-6 ตัว)"
+        maxlength="6"
+        inputmode="numeric"
+      >
+      </ion-input>
+    </ion-item>
+
+    <!-- Confirm New PIN -->
+    <ion-item>
+      <ion-label position="stacked"
+        >ยืนยันรหัส PIN ใหม่ <span class="required">*</span></ion-label
+      >
+      <ion-input
+        type="password"
+        [(ngModel)]="confirmPin"
+        placeholder="ใส่รหัส PIN ใหม่อีกครั้ง"
+        maxlength="6"
+        inputmode="numeric"
+      >
+      </ion-input>
+    </ion-item>
+
+    <!-- Buttons -->
+    <div class="button-group">
+      <ion-button
+        expand="block"
+        (click)="submit()"
+        [disabled]="!oldPin || !newPin || !confirmPin"
+      >
+        เปลี่ยนรหัส PIN
+      </ion-button>
+      <ion-button expand="block" fill="outline" (click)="cancel()">
+        ยกเลิก
+      </ion-button>
+    </div>
+
+    <!-- Info Box -->
+    <div class="info-box">
+      <ion-icon name="information-circle-outline"></ion-icon>
+      <div class="info-text">
+        <p><strong>ข้อกำหนดรหัส PIN:</strong></p>
+        <ul>
+          <li>ต้องมีความยาว 4-6 ตัว</li>
+          <li>ต้องเป็นตัวเลขเท่านั้น</li>
+          <li>ห้ามใช้รหัสเดียวกับรหัสเดิม</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</ion-content>

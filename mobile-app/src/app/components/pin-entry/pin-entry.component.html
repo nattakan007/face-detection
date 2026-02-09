@@ -1,0 +1,97 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ title }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="pin-entry-container">
+    <!-- Mode indicator -->
+    <div class="mode-info">
+      <ion-icon
+        [name]="mode === 'setup' ? 'key-outline' : 'lock-closed-outline'"
+        color="primary"
+      >
+      </ion-icon>
+      <p>{{ mode === "setup" ? "ตั้งรหัส PIN ใหม่" : "ยืนยันตัวตน" }}</p>
+    </div>
+
+    <!-- PIN Display -->
+    <div class="pin-display">
+      <div class="pin-label">รหัส PIN</div>
+      <div class="pin-dots">
+        <span
+          *ngFor="let i of [0, 1, 2, 3, 4, 5]"
+          [class.filled]="i < pin.length"
+          [class.active]="i === pin.length && !showConfirm"
+        >
+          {{ i < pin.length ? "•" : "" }}
+        </span>
+      </div>
+      <div class="pin-hint">{{ pin.length }}/6 ตัว</div>
+    </div>
+
+    <!-- Confirm PIN Display (setup mode only) -->
+    <div class="pin-display" *ngIf="showConfirm && pin.length >= 4">
+      <div class="pin-label">ยืนยันรหัส PIN</div>
+      <div class="pin-dots">
+        <span
+          *ngFor="let i of [0, 1, 2, 3, 4, 5]"
+          [class.filled]="i < confirmPin.length"
+          [class.active]="i === confirmPin.length"
+        >
+          {{ i < confirmPin.length ? "•" : "" }}
+        </span>
+      </div>
+      <div class="pin-hint">{{ confirmPin.length }}/6 ตัว</div>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-message" *ngIf="error">
+      <ion-icon name="alert-circle" color="danger"></ion-icon>
+      <span>{{ error }}</span>
+    </div>
+
+    <!-- Number Pad -->
+    <div class="number-pad">
+      <div class="number-row">
+        <button class="number-btn" (click)="onNumberPress('1')">1</button>
+        <button class="number-btn" (click)="onNumberPress('2')">2</button>
+        <button class="number-btn" (click)="onNumberPress('3')">3</button>
+      </div>
+      <div class="number-row">
+        <button class="number-btn" (click)="onNumberPress('4')">4</button>
+        <button class="number-btn" (click)="onNumberPress('5')">5</button>
+        <button class="number-btn" (click)="onNumberPress('6')">6</button>
+      </div>
+      <div class="number-row">
+        <button class="number-btn" (click)="onNumberPress('7')">7</button>
+        <button class="number-btn" (click)="onNumberPress('8')">8</button>
+        <button class="number-btn" (click)="onNumberPress('9')">9</button>
+      </div>
+      <div class="number-row">
+        <button class="number-btn empty"></button>
+        <button class="number-btn" (click)="onNumberPress('0')">0</button>
+        <button class="number-btn backspace" (click)="onBackspace()">
+          <ion-icon name="backspace-outline"></ion-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- Submit Button (for setup mode) -->
+    <ion-button
+      *ngIf="mode === 'setup'"
+      expand="block"
+      [disabled]="!canSubmit()"
+      (click)="submit()"
+      class="submit-btn"
+    >
+      ยืนยัน
+    </ion-button>
+  </div>
+</ion-content>

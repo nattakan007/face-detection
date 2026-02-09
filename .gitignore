@@ -74,3 +74,10 @@ coverage/
 
 # Build logs
 mobile-app/build.log
+flutter-app/**/*.g.dart
+flutter-app/**/*.freezed.dart
+flutter-app/**/*.gr.dart
+
+# Flutter IDE
+flutter-app/.idea/
+flutter-app/*.iml

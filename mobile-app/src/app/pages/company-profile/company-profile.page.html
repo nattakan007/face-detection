@@ -1,0 +1,152 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin-dashboard" text=""></ion-back-button>
+    </ion-buttons>
+    <ion-title>โปรไฟล์บริษัท</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="profile-container">
+    <!-- Company Logo Section -->
+    <div class="logo-section">
+      <div class="company-logo" (click)="changeLogo()">
+        <img
+          *ngIf="company.logoUrl"
+          [src]="company.logoUrl"
+          alt="Company Logo"
+        />
+        <div *ngIf="!company.logoUrl" class="logo-placeholder">
+          <ion-icon name="business-outline"></ion-icon>
+          <span>เพิ่มโลโก้</span>
+        </div>
+        <div class="logo-edit-badge">
+          <ion-icon name="camera"></ion-icon>
+        </div>
+      </div>
+    </div>
+
+    <!-- Company Information Form -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="business" color="primary"></ion-icon>
+          ข้อมูลบริษัท
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label position="stacked"
+            >ชื่อบริษัท / ร้านค้า <span class="required">*</span></ion-label
+          >
+          <ion-input
+            type="text"
+            [(ngModel)]="company.name"
+            placeholder="เช่น SAILOR BAR & RESTAURANT"
+          ></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">ประเภทธุรกิจ</ion-label>
+          <ion-select
+            [(ngModel)]="company.businessType"
+            placeholder="เลือกประเภท"
+          >
+            <ion-select-option value="restaurant">ร้านอาหาร</ion-select-option>
+            <ion-select-option value="bar">บาร์ / ผับ</ion-select-option>
+            <ion-select-option value="cafe">คาเฟ่</ion-select-option>
+            <ion-select-option value="hotel">โรงแรม</ion-select-option>
+            <ion-select-option value="retail">ค้าปลีก</ion-select-option>
+            <ion-select-option value="office">สำนักงาน</ion-select-option>
+            <ion-select-option value="factory">โรงงาน</ion-select-option>
+            <ion-select-option value="other">อื่นๆ</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">ที่อยู่</ion-label>
+          <ion-textarea
+            [(ngModel)]="company.address"
+            placeholder="ที่อยู่บริษัท"
+            rows="3"
+          ></ion-textarea>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">เบอร์โทรศัพท์</ion-label>
+          <ion-input
+            type="tel"
+            [(ngModel)]="company.phone"
+            placeholder="0xx-xxx-xxxx"
+          ></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">อีเมล</ion-label>
+          <ion-input
+            type="email"
+            [(ngModel)]="company.email"
+            placeholder="email@company.com"
+          ></ion-input>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Work Schedule -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="time" color="primary"></ion-icon>
+          เวลาทำงาน
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item>
+          <ion-label position="stacked">เวลาเข้างาน</ion-label>
+          <ion-input
+            type="time"
+            [(ngModel)]="company.workStartTime"
+          ></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">เวลาเลิกงาน</ion-label>
+          <ion-input type="time" [(ngModel)]="company.workEndTime"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="stacked">เวลาที่ถือว่ามาสาย</ion-label>
+          <ion-input type="time" [(ngModel)]="company.lateTime"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>วันทำงาน</ion-label>
+        </ion-item>
+        <div class="workdays-grid">
+          <ion-chip
+            *ngFor="let day of weekDays"
+            [color]="company.workDays.includes(day.value) ? 'primary' : 'medium'"
+            (click)="toggleWorkDay(day.value)"
+            [outline]="!company.workDays.includes(day.value)"
+          >
+            {{ day.label }}
+          </ion-chip>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Save Button -->
+    <div class="button-section">
+      <ion-button
+        expand="block"
+        size="large"
+        (click)="saveProfile()"
+        [disabled]="isSaving"
+      >
+        <ion-icon name="save" slot="start"></ion-icon>
+        {{ isSaving ? 'กำลังบันทึก...' : 'บันทึกข้อมูล' }}
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

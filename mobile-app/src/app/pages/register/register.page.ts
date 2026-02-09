@@ -3,6 +3,7 @@ import { Router } from "@angular/router";
 import { FaceDetectionService } from "../../services/face-detection.service";
 import { StorageService } from "../../services/storage.service";
 import { PermissionService } from "../../services/permission.service";
+import { SettingsService } from "../../services/settings.service";
 import { UserProfile } from "../../services/storage.service";
 import {
   LoadingController,
@@ -36,15 +37,18 @@ export class RegisterPage implements OnInit {
   capturedConfidence: number = 0;
   isDuplicateFace: boolean = false; // Flag for duplicate face detection
 
-  // Auto-capture settings
+  // Auto-capture settings (loaded from settings service)
   private autoCaptureCooldown = false;
-  private readonly AUTO_CAPTURE_THRESHOLD = 0.85; // 85% confidence for auto-capture
+  private AUTO_CAPTURE_THRESHOLD = 0.85; // Will be loaded from settings
+  private DUPLICATE_THRESHOLD = 0.6; // Will be loaded from settings
+  private REGISTRATION_MIN_CONFIDENCE = 0.8; // Will be loaded from settings
 
   constructor(
     private router: Router,
     private faceDetection: FaceDetectionService,
     private storage: StorageService,
     private permissionService: PermissionService,
+    private settingsService: SettingsService,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
     private alertCtrl: AlertController
@@ -52,6 +56,23 @@ export class RegisterPage implements OnInit {
 
   ngOnInit() {
     this.generateEmployeeId();
+    this.loadSettings();
+  }
+
+  /**
+   * Load settings from settings service
+   */
+  private async loadSettings() {
+    try {
+      const faceSettings =
+        await this.settingsService.getFaceDetectionSettings();
+      this.AUTO_CAPTURE_THRESHOLD = faceSettings.autoCaptureThresholdRegister;
+      this.DUPLICATE_THRESHOLD = faceSettings.duplicateThreshold;
+      this.REGISTRATION_MIN_CONFIDENCE = faceSettings.registrationMinConfidence;
+    } catch (error) {
+      console.error("Error loading settings:", error);
+      // Keep defaults if error
+    }
   }
 
   async generateEmployeeId() {
@@ -62,11 +83,22 @@ export class RegisterPage implements OnInit {
   }
 
   /**
-   * Handle auto-capture when face is detected with high confidence
+   * Handle face detection events from live camera (both auto-capture and manual)
    */
   async onFaceAutoCapture(event: any) {
-    // Skip if already captured, processing, or in cooldown
-    if (this.profilePhoto || this.isProcessing || this.autoCaptureCooldown) {
+    // Skip if already captured or processing
+    if (this.profilePhoto || this.isProcessing) {
+      return;
+    }
+
+    // If imageDataUrl is provided, it means photo was captured
+    if (event.imageDataUrl) {
+      await this.processPhoto(event.imageDataUrl);
+      return;
+    }
+
+    // Otherwise, this is a real-time detection event for auto-capture
+    if (this.autoCaptureCooldown) {
       return;
     }
 
@@ -109,6 +141,12 @@ export class RegisterPage implements OnInit {
       }
     } catch (error: any) {
       console.error("Auto-capture error:", error);
+      const toast = await this.toastCtrl.create({
+        message: "เกิดข้อผิดพลาดในการถ่ายภาพ กรุณาลองใหม่",
+        color: "danger",
+        duration: 2000,
+      });
+      await toast.present();
     } finally {
       this.isProcessing = false;
     }
@@ -138,12 +176,13 @@ export class RegisterPage implements OnInit {
         return;
       }
 
-      // Require >80% confidence for registration
-      if (detection.confidence < 0.8) {
+      // Require minimum confidence for registration (from settings)
+      if (detection.confidence < this.REGISTRATION_MIN_CONFIDENCE) {
+        const minPercent = Math.round(this.REGISTRATION_MIN_CONFIDENCE * 100);
         const toast = await this.toastCtrl.create({
           message: `ความชัดเจน ${Math.round(
             detection.confidence * 100
-          )}% ไม่เพียงพอ กรุณาถ่ายใหม่`,
+          )}% ไม่เพียงพอ (ต้องการ ${minPercent}%) กรุณาถ่ายใหม่`,
           color: "warning",
           duration: 2000,
         });
@@ -156,26 +195,13 @@ export class RegisterPage implements OnInit {
       this.faceDescriptor = detection.descriptor;
       this.capturedConfidence = Math.round(detection.confidence * 100);
 
-      // Check for duplicate face immediately
-      this.isDuplicateFace = await this.checkDuplicateFace(
-        detection.descriptor!
-      );
-
-      if (this.isDuplicateFace) {
-        const toast = await this.toastCtrl.create({
-          message: "ใบหน้านี้ถูกลงทะเบียนแล้ว กรุณาถ่ายใหม่",
-          color: "warning",
-          duration: 3000,
-        });
-        await toast.present();
-      } else {
-        const toast = await this.toastCtrl.create({
-          message: `บันทึกใบหน้าสำเร็จ! (${this.capturedConfidence}%)`,
-          color: "success",
-          duration: 2000,
-        });
-        await toast.present();
-      }
+      // Show success message (duplicate check will be done when user clicks Register button)
+      const toast = await this.toastCtrl.create({
+        message: `บันทึกใบหน้าสำเร็จ! (${this.capturedConfidence}%)`,
+        color: "success",
+        duration: 2000,
+      });
+      await toast.present();
     } catch (error: any) {
       console.error("Photo processing error:", error);
       const toast = await this.toastCtrl.create({
@@ -265,6 +291,18 @@ export class RegisterPage implements OnInit {
 
       loading.message = "กำลังบันทึกข้อมูล...";
 
+      // Validate email format if provided
+      if (this.user.email && !this.isValidEmail(this.user.email)) {
+        await loading.dismiss();
+        const toast = await this.toastCtrl.create({
+          message: "รูปแบบอีเมลไม่ถูกต้อง",
+          color: "warning",
+          duration: 2000,
+        });
+        await toast.present();
+        return;
+      }
+
       // Create user profile
       const userProfile = {
         id: Date.now().toString(),
@@ -280,6 +318,8 @@ export class RegisterPage implements OnInit {
 
       // Save to storage
       await this.storage.saveUserProfile(userProfile);
+
+      // Sync จะทำงานตามรอบเวลาผ่าน SyncSchedulerService (ทุก 5 นาที)
 
       await loading.dismiss();
 
@@ -305,18 +345,25 @@ export class RegisterPage implements OnInit {
   }
 
   /**
+   * Validate email format
+   */
+  private isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  /**
    * Check if face descriptor matches any existing user
    */
   private async checkDuplicateFace(faceDescriptor: number[]): Promise<boolean> {
     const allUsers = await this.storage.getAllUsers();
-    const DUPLICATE_THRESHOLD = 0.6; // Same as face matching threshold
 
     for (const user of allUsers) {
       const d1 = new Float32Array(faceDescriptor);
       const d2 = new Float32Array(user.faceDescriptor);
       const distance = (window as any).faceapi.euclideanDistance(d1, d2);
 
-      if (distance < DUPLICATE_THRESHOLD) {
+      if (distance < this.DUPLICATE_THRESHOLD) {
         console.log(
           `Duplicate face found: ${user.name} (distance: ${distance.toFixed(
             3

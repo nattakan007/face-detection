@@ -1,0 +1,266 @@
+// ============================================
+// ADMIN DASHBOARD
+// ============================================
+
+.admin-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+// ============ HEADER ============
+.admin-header {
+  background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%);
+  margin: -16px -16px 20px;
+  padding: 16px 20px;
+  border-radius: 0 0 24px 24px;
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .header-btn {
+    --color: rgba(255, 255, 255, 0.8);
+
+    &:hover {
+      --color: #ffffff;
+    }
+  }
+
+  .header-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+  }
+
+  .session-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.8);
+
+    ion-icon {
+      font-size: 14px;
+    }
+  }
+}
+
+// ============ STATS ============
+.stats-section {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px 12px;
+  text-align: center;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+
+  .stat-icon-bg {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 8px;
+
+    ion-icon {
+      font-size: 20px;
+      color: #ffffff;
+    }
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1e293b;
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-top: 2px;
+  }
+
+  &.stat-employees .stat-icon-bg {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  }
+
+  &.stat-attendance .stat-icon-bg {
+    background: linear-gradient(135deg, #10b981, #059669);
+  }
+
+  &.stat-records .stat-icon-bg {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+  }
+}
+
+// ============ MENU GRID ============
+.menu-section {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 12px 4px;
+}
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.menu-card {
+  background: #ffffff;
+  border: none;
+  border-radius: 16px;
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  &:active {
+    transform: scale(0.95);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .menu-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    ion-icon {
+      font-size: 24px;
+      color: #ffffff;
+    }
+
+    &.color-green { background: linear-gradient(135deg, #10b981, #059669); }
+    &.color-blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+    &.color-purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+    &.color-orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    &.color-teal { background: linear-gradient(135deg, #14b8a6, #0d9488); }
+    &.color-gray { background: linear-gradient(135deg, #64748b, #475569); }
+  }
+
+  .menu-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #475569;
+    text-align: center;
+    line-height: 1.4;
+  }
+}
+
+// ============ SYNC SECTION ============
+.sync-section {
+  margin-bottom: 16px;
+}
+
+.sync-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  .sync-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .sync-icon {
+      font-size: 28px;
+
+      &.spinning {
+        animation: spin 1s linear infinite;
+      }
+    }
+
+    .sync-text {
+      display: flex;
+      flex-direction: column;
+
+      .sync-label {
+        font-size: 0.7rem;
+        color: #94a3b8;
+      }
+
+      .sync-time {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #1e293b;
+      }
+    }
+  }
+}
+
+// ============ LOGOUT ============
+.logout-section {
+  padding-bottom: 32px;
+
+  ion-button {
+    --border-radius: 12px;
+    font-weight: 600;
+  }
+}
+
+// ============ ANIMATIONS ============
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+// ============ RESPONSIVE ============
+@media (max-width: 360px) {
+  .stats-section {
+    gap: 8px;
+  }
+
+  .stat-card {
+    padding: 12px 8px;
+
+    .stat-value {
+      font-size: 1.2rem;
+    }
+
+    .stat-label {
+      font-size: 0.65rem;
+    }
+  }
+
+  .menu-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .menu-card {
+    padding: 16px 8px;
+  }
+}
