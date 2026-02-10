@@ -116,16 +116,16 @@ export class AppSettingsDefaults {
       },
 
       faceDetection: {
-        minConfidence: 0.8, // 80%
-        registrationMinConfidence: 0.8, // 80%
-        manualCheckInMinConfidence: 0.7, // 70%
-        realTimeMinConfidence: 0.5, // 50%
-        matchDistanceThreshold: 0.6,
-        minSimilarityPercent: 0.7, // 70%
-        duplicateThreshold: 0.6,
+        minConfidence: 0.75, // 75% — สมดุลที่ดีที่สุดระหว่างความงาม่ายและคุณภาพ (TinyFaceDetector ~0.4-0.85)
+        registrationMinConfidence: 0.7, // 70%
+        manualCheckInMinConfidence: 0.65, // 65%
+        realTimeMinConfidence: 0.55, // 55%
+        matchDistanceThreshold: 0.6, // Euclidean distance threshold (ต่ำ = เข้มงวด)
+        minSimilarityPercent: 0.5, // 50% — ใช้ exp(-3*dist) formula
+        duplicateThreshold: 0.5, // duplicate face detection
         autoCaptureEnabled: true,
-        autoCaptureThresholdScan: 0.9, // 90%
-        autoCaptureThresholdRegister: 0.85, // 85%
+        autoCaptureThresholdScan: 0.75, // 75% auto-capture scan (ลด false positive)
+        autoCaptureThresholdRegister: 0.7, // 70% auto-capture register
         autoCaptureCooldown: 2000, // 2 วินาที
         scanTimeout: 30000, // 30 วินาที
       },
@@ -142,7 +142,7 @@ export class AppSettingsDefaults {
         duplicatePreventionWindow: 300000, // 5 นาที
         requireLocation: false,
         requirePhoto: true,
-        autoCheckoutEnabled: false,
+        autoCheckoutEnabled: true, // เปิดบังคับออกงานอัตโนมัติ
         autoCheckoutHours: 8, // 8 ชั่วโมง
       },
 
@@ -206,12 +206,13 @@ export class AppSettingsDefaults {
       ...defaults,
       faceDetection: {
         ...defaults.faceDetection,
-        minConfidence: 0.9, // 90%
-        registrationMinConfidence: 0.9, // 90%
-        manualCheckInMinConfidence: 0.85, // 85%
-        minSimilarityPercent: 0.85, // 85%
-        autoCaptureThresholdScan: 0.9, // 90%
-        autoCaptureThresholdRegister: 0.85, // 85%
+        minConfidence: 0.8, // 80% — ใกล้ขีดสูงสุดของ TinyFaceDetector
+        registrationMinConfidence: 0.75, // 75%
+        manualCheckInMinConfidence: 0.7, // 70%
+        matchDistanceThreshold: 0.5, // เข้มงวดขึ้น (ต่ำ = เข้มงวด)
+        minSimilarityPercent: 0.6, // 60%
+        autoCaptureThresholdScan: 0.8, // 80%
+        autoCaptureThresholdRegister: 0.75, // 75%
       },
       attendance: {
         ...defaults.attendance,
@@ -232,12 +233,13 @@ export class AppSettingsDefaults {
       ...defaults,
       faceDetection: {
         ...defaults.faceDetection,
-        minConfidence: 0.65, // 65%
-        registrationMinConfidence: 0.7, // 70%
-        manualCheckInMinConfidence: 0.65, // 65%
-        minSimilarityPercent: 0.65, // 65%
-        autoCaptureThresholdScan: 0.9, // 90%
-        autoCaptureThresholdRegister: 0.8, // 80%
+        minConfidence: 0.4, // 40%
+        registrationMinConfidence: 0.45, // 45%
+        manualCheckInMinConfidence: 0.4, // 40%
+        matchDistanceThreshold: 0.7, // ยืดหยุ่น (สูง = ยืดหยุ่น)
+        minSimilarityPercent: 0.4, // 40%
+        autoCaptureThresholdScan: 0.45, // 45%
+        autoCaptureThresholdRegister: 0.4, // 40%
       },
       attendance: {
         ...defaults.attendance,
@@ -255,11 +257,11 @@ export class AppSettingsDefaults {
  */
 export class AppSettingsValidator {
   /**
-   * ตรวจสอบค่า confidence (ต้องอยู่ระหว่าง 0.65-1.0)
+   * ตรวจสอบค่า confidence (ต้องอยู่ระหว่าง 0.3-1.0 สำหรับ TinyFaceDetector)
    */
   static validateConfidence(
     value: number,
-    min: number = 0.65,
+    min: number = 0.3,
     max: number = 1.0,
   ): boolean {
     return value >= min && value <= max;
@@ -330,11 +332,11 @@ export class AppSettingsValidator {
 
     // ตรวจสอบ confidence values
     if (!this.validateConfidence(settings.faceDetection.minConfidence)) {
-      errors.push("ค่าความแม่นยำขั้นต่ำต้องอยู่ระหว่าง 65-100%");
+      errors.push("ค่าความแม่นยำขั้นต่ำต้องอยู่ระหว่าง 30-100%");
     }
 
     if (!this.validateConfidence(settings.faceDetection.minSimilarityPercent)) {
-      errors.push("ค่าความคล้ายคลึงขั้นต่ำต้องอยู่ระหว่าง 65-100%");
+      errors.push("ค่าความคล้ายคลึงขั้นต่ำต้องอยู่ระหว่าง 30-100%");
     }
 
     // ตรวจสอบเวลา

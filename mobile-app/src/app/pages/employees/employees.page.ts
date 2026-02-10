@@ -1,5 +1,5 @@
 import { Component, OnInit } from "@angular/core";
-import { Platform } from "@ionic/angular";
+import { Platform, AlertController } from "@ionic/angular";
 import { StorageService } from "../../services/storage.service";
 import { FaceDetectionService } from "../../services/face-detection.service";
 import { UserProfile } from "../../services/storage.service";
@@ -17,12 +17,17 @@ export class EmployeesPage implements OnInit {
   constructor(
     private storage: StorageService,
     private faceDetection: FaceDetectionService,
-    private platform: Platform
+    private platform: Platform,
+    private alertCtrl: AlertController,
   ) {}
 
   async ngOnInit() {
     // Show test button only on browser
     this.showTestButton = !this.platform.is("capacitor");
+    await this.loadEmployees();
+  }
+
+  async ionViewWillEnter() {
     await this.loadEmployees();
   }
 
@@ -42,6 +47,40 @@ export class EmployeesPage implements OnInit {
     await this.loadEmployees();
     event.target.complete();
   }
+
+  /**
+   * ลบพนักงาน - ยืนยัน 1 ครั้งแล้วลบทันที
+   */
+  async deleteEmployee(employee: UserProfile) {
+    const alert = await this.alertCtrl.create({
+      header: "ลบพนักงาน",
+      message: `ต้องการลบ "${employee.name}" ออกจากระบบ?`,
+      cssClass: "delete-alert",
+      buttons: [
+        {
+          text: "ยกเลิก",
+          role: "cancel",
+        },
+        {
+          text: "ลบ",
+          role: "destructive",
+          handler: async () => {
+            try {
+              await this.storage.deleteUser(employee.id);
+              this.employees = this.employees.filter(
+                (e) => e.id !== employee.id,
+              );
+              console.log(`[EMPLOYEES] Deleted: ${employee.name}`);
+            } catch (error) {
+              console.error("[EMPLOYEES] Delete error:", error);
+            }
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
   /**
    * สร้างพนักงานทดสอบ (แสดงเฉพาะบน browser)
    */
@@ -69,7 +108,7 @@ export class EmployeesPage implements OnInit {
       await this.storage.initTestEmployee(
         "ทรี",
         base64Image,
-        detection.descriptor
+        detection.descriptor,
       );
       console.log('[EMPLOYEES] Test employee "ทรี" created successfully');
 

@@ -67,6 +67,38 @@ export class SettingsService {
             defaults.faceDetection.autoCaptureCooldown;
           needsSave = true;
         }
+        // Migrate: TinyFaceDetector gives lower scores than SSD
+        // Reset any confidence thresholds that are too high for TinyFaceDetector (> 80%)
+        if (existingSettings.faceDetection.minConfidence > 0.8) {
+          existingSettings.faceDetection.minConfidence =
+            defaults.faceDetection.minConfidence;
+          needsSave = true;
+        }
+        if (existingSettings.faceDetection.registrationMinConfidence > 0.8) {
+          existingSettings.faceDetection.registrationMinConfidence =
+            defaults.faceDetection.registrationMinConfidence;
+          needsSave = true;
+        }
+        if (existingSettings.faceDetection.autoCaptureThresholdScan > 0.8) {
+          existingSettings.faceDetection.autoCaptureThresholdScan =
+            defaults.faceDetection.autoCaptureThresholdScan;
+          needsSave = true;
+        }
+        if (existingSettings.faceDetection.minSimilarityPercent > 0.6) {
+          existingSettings.faceDetection.minSimilarityPercent =
+            defaults.faceDetection.minSimilarityPercent;
+          needsSave = true;
+        }
+      }
+
+      // Migrate: ensure autoCheckoutEnabled defaults to true
+      if (
+        existingSettings.attendance &&
+        existingSettings.attendance.autoCheckoutEnabled === false &&
+        existingSettings.attendance.autoCheckoutHours === 8
+      ) {
+        existingSettings.attendance.autoCheckoutEnabled = true;
+        needsSave = true;
       }
 
       if (needsSave) {

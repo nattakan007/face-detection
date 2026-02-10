@@ -77,30 +77,67 @@
 }
 
 // ============ PIN DISPLAY ============
-.pin-display {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  margin-bottom: 12px;
+// ============ LOGIN FORM ============
+.login-form {
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 8px;
 
-  .pin-dot {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+  .input-group {
+    position: relative;
+    margin-bottom: 16px;
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      color: rgba(255, 255, 255, 0.4);
+      z-index: 1;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      color: rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      z-index: 1;
+
+      &:active {
+        color: rgba(255, 255, 255, 0.7);
+      }
+    }
+  }
+
+  .login-input {
+    width: 100%;
+    height: 52px;
+    padding: 0 44px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+    font-size: 1rem;
+    outline: none;
     transition: all 0.2s ease;
+    box-sizing: border-box;
 
-    &.filled {
-      background: #ffffff;
-      border-color: #ffffff;
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    &:focus {
+      border-color: rgba(59, 130, 246, 0.6);
+      background: rgba(255, 255, 255, 0.08);
     }
 
     &.error {
       border-color: #ef4444;
-      
-      &.filled {
-        background: #ef4444;
-      }
+      animation: shake 0.5s ease-in-out;
     }
   }
 }
@@ -113,50 +150,15 @@
   margin: 4px 0 16px 0;
 }
 
-// ============ NUMBER PAD ============
-.numpad {
+// ============ LOGIN BUTTON ============
+.login-button {
   width: 100%;
-  max-width: 300px;
-  margin-top: 16px;
-
-  .numpad-row {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-bottom: 16px;
-  }
-
-  .numpad-btn {
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    background: rgba(255, 255, 255, 0.05);
-    color: #ffffff;
-    font-size: 1.5rem;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.15s ease;
-
-    &:active:not(.empty):not(:disabled) {
-      background: rgba(255, 255, 255, 0.2);
-      transform: scale(0.95);
-    }
-
-    &.empty {
-      border: none;
-      background: transparent;
-      cursor: default;
-    }
-
-    ion-icon {
-      font-size: 24px;
-      color: rgba(255, 255, 255, 0.7);
-    }
-  }
+  max-width: 320px;
+  --border-radius: 12px;
+  height: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
 }
 
 .pin-hint {
@@ -176,18 +178,6 @@
 }
 
 // ============ RESPONSIVE ============
-@media (max-width: 360px) {
-  .numpad .numpad-btn {
-    width: 60px;
-    height: 60px;
-    font-size: 1.3rem;
-  }
-
-  .numpad .numpad-row {
-    gap: 16px;
-  }
-}
-
 @media (max-height: 640px) {
   .lock-section {
     margin-top: 12px;
@@ -205,16 +195,5 @@
     .login-title {
       font-size: 1.2rem;
     }
-  }
-
-  .numpad .numpad-btn {
-    width: 56px;
-    height: 56px;
-    font-size: 1.2rem;
-  }
-
-  .numpad .numpad-row {
-    gap: 16px;
-    margin-bottom: 12px;
   }
 }

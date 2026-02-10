@@ -39,9 +39,9 @@ export class RegisterPage implements OnInit {
 
   // Auto-capture settings (loaded from settings service)
   private autoCaptureCooldown = false;
-  private AUTO_CAPTURE_THRESHOLD = 0.85; // Will be loaded from settings
-  private DUPLICATE_THRESHOLD = 0.6; // Will be loaded from settings
-  private REGISTRATION_MIN_CONFIDENCE = 0.8; // Will be loaded from settings
+  private AUTO_CAPTURE_THRESHOLD = 0.7; // TinyFaceDetector default (70%)
+  private DUPLICATE_THRESHOLD = 0.5; // Will be loaded from settings
+  private REGISTRATION_MIN_CONFIDENCE = 0.7; // Will be loaded from settings
 
   constructor(
     private router: Router,
@@ -51,7 +51,7 @@ export class RegisterPage implements OnInit {
     private settingsService: SettingsService,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
   ) {}
 
   ngOnInit() {
@@ -181,7 +181,7 @@ export class RegisterPage implements OnInit {
         const minPercent = Math.round(this.REGISTRATION_MIN_CONFIDENCE * 100);
         const toast = await this.toastCtrl.create({
           message: `ความชัดเจน ${Math.round(
-            detection.confidence * 100
+            detection.confidence * 100,
           )}% ไม่เพียงพอ (ต้องการ ${minPercent}%) กรุณาถ่ายใหม่`,
           color: "warning",
           duration: 2000,
@@ -330,8 +330,8 @@ export class RegisterPage implements OnInit {
       });
       await toast.present();
 
-      // Navigate to scan page
-      this.router.navigate(["/scan"]);
+      // Navigate back to admin dashboard (stay in admin mode)
+      this.router.navigate(["/admin-dashboard"]);
     } catch (error: any) {
       await loading.dismiss();
 
@@ -359,15 +359,16 @@ export class RegisterPage implements OnInit {
     const allUsers = await this.storage.getAllUsers();
 
     for (const user of allUsers) {
-      const d1 = new Float32Array(faceDescriptor);
-      const d2 = new Float32Array(user.faceDescriptor);
-      const distance = (window as any).faceapi.euclideanDistance(d1, d2);
+      const distance = this.faceDetection.getEuclideanDistance(
+        faceDescriptor,
+        user.faceDescriptor,
+      );
 
       if (distance < this.DUPLICATE_THRESHOLD) {
         console.log(
           `Duplicate face found: ${user.name} (distance: ${distance.toFixed(
-            3
-          )})`
+            3,
+          )})`,
         );
         return true;
       }
@@ -377,6 +378,6 @@ export class RegisterPage implements OnInit {
   }
 
   cancel() {
-    this.router.navigate(["/scan"]);
+    this.router.navigate(["/admin-dashboard"]);
   }
 }

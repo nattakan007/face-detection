@@ -26,7 +26,7 @@ export class AdminSettingsPage implements OnInit {
   originalSettings!: AppSettings;
 
   // UI state
-  selectedSegment: string = "face"; // face, schedule, shifts, attendance, advanced, data
+  selectedSegment: string = "face"; // face, work-time, advanced, data
   hasUnsavedChanges: boolean = false;
   sessionTimeRemaining: number = 30;
 
@@ -38,7 +38,7 @@ export class AdminSettingsPage implements OnInit {
     private router: Router,
     private authService: AuthService,
     private modalController: ModalController,
-    private storageService: StorageService
+    private storageService: StorageService,
   ) {}
 
   async ngOnInit() {
@@ -81,7 +81,7 @@ export class AdminSettingsPage implements OnInit {
 
     try {
       const result = await this.settingsService.updateAppSettings(
-        this.settings
+        this.settings,
       );
 
       if (result.success) {
@@ -91,7 +91,7 @@ export class AdminSettingsPage implements OnInit {
       } else {
         await this.showAlert(
           "ข้อผิดพลาด",
-          result.errors?.join("\n") || "เกิดข้อผิดพลาด"
+          result.errors?.join("\n") || "เกิดข้อผิดพลาด",
         );
       }
     } catch (error) {
@@ -146,7 +146,7 @@ export class AdminSettingsPage implements OnInit {
             await this.loadSettings();
             await this.showToast(
               `โหลดการตั้งค่าแบบ${presetNames[preset]}เรียบร้อย`,
-              "success"
+              "success",
             );
           },
         },
@@ -173,8 +173,8 @@ export class AdminSettingsPage implements OnInit {
     const { data, role } = await modal.onWillDismiss();
 
     if (role === "confirm" && data?.success) {
-      // PIN changed successfully
-      await this.showToast("เปลี่ยนรหัส PIN เรียบร้อยแล้ว", "success");
+      // Credentials changed successfully
+      await this.showToast("เปลี่ยนข้อมูลเข้าสู่ระบบเรียบร้อยแล้ว", "success");
     }
   }
 
@@ -207,7 +207,7 @@ export class AdminSettingsPage implements OnInit {
 
   async goBack() {
     if (await this.canDeactivate()) {
-      this.router.navigate(["/scan"]);
+      this.router.navigate(["/admin-dashboard"]);
     }
   }
 

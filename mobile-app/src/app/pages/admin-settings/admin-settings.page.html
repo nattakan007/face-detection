@@ -19,14 +19,8 @@
       <ion-segment-button value="face">
         <ion-label>ใบหน้า</ion-label>
       </ion-segment-button>
-      <ion-segment-button value="schedule">
-        <ion-label>ตารางเวลา</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="shifts">
-        <ion-label>กะทำงาน</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="attendance">
-        <ion-label>การเข้างาน</ion-label>
+      <ion-segment-button value="work-time">
+        <ion-label>เวลา & การทำงาน</ion-label>
       </ion-segment-button>
       <ion-segment-button value="advanced">
         <ion-label>ขั้นสูง</ion-label>
@@ -95,14 +89,14 @@
           </ion-label>
           <ion-range
             [(ngModel)]="settings.faceDetection.minConfidence"
-            min="0.65"
-            max="1.0"
+            min="0.3"
+            max="0.85"
             step="0.05"
             pin="true"
             (ionChange)="onSettingChange()"
           >
-            <ion-label slot="start">65%</ion-label>
-            <ion-label slot="end">100%</ion-label>
+            <ion-label slot="start">30%</ion-label>
+            <ion-label slot="end">85%</ion-label>
           </ion-range>
         </ion-item>
 
@@ -116,14 +110,14 @@
           </ion-label>
           <ion-range
             [(ngModel)]="settings.faceDetection.minSimilarityPercent"
-            min="0.65"
-            max="1.0"
+            min="0.3"
+            max="0.85"
             step="0.05"
             pin="true"
             (ionChange)="onSettingChange()"
           >
-            <ion-label slot="start">65%</ion-label>
-            <ion-label slot="end">100%</ion-label>
+            <ion-label slot="start">30%</ion-label>
+            <ion-label slot="end">85%</ion-label>
           </ion-range>
         </ion-item>
 
@@ -138,14 +132,14 @@
           </ion-label>
           <ion-range
             [(ngModel)]="settings.faceDetection.registrationMinConfidence"
-            min="0.65"
-            max="1.0"
+            min="0.3"
+            max="0.85"
             step="0.05"
             pin="true"
             (ionChange)="onSettingChange()"
           >
-            <ion-label slot="start">65%</ion-label>
-            <ion-label slot="end">100%</ion-label>
+            <ion-label slot="start">30%</ion-label>
+            <ion-label slot="end">85%</ion-label>
           </ion-range>
         </ion-item>
 
@@ -160,14 +154,14 @@
           </ion-label>
           <ion-range
             [(ngModel)]="settings.faceDetection.autoCaptureThresholdScan"
-            min="0.80"
-            max="1.0"
-            step="0.01"
+            min="0.35"
+            max="0.85"
+            step="0.05"
             pin="true"
             (ionChange)="onSettingChange()"
           >
-            <ion-label slot="start">80%</ion-label>
-            <ion-label slot="end">100%</ion-label>
+            <ion-label slot="start">35%</ion-label>
+            <ion-label slot="end">85%</ion-label>
           </ion-range>
         </ion-item>
 
@@ -214,8 +208,8 @@
     </ion-card>
   </div>
 
-  <!-- Schedule Settings -->
-  <div *ngIf="selectedSegment === 'schedule'" class="settings-section">
+  <!-- Work Time Settings (Schedule + Shifts + Attendance) -->
+  <div *ngIf="selectedSegment === 'work-time'" class="settings-section">
     <ion-card>
       <ion-card-header>
         <ion-card-title>ตารางเวลาทำงาน</ion-card-title>
@@ -288,10 +282,7 @@
         </ion-item>
       </ion-card-content>
     </ion-card>
-  </div>
 
-  <!-- Work Shifts Settings -->
-  <div *ngIf="selectedSegment === 'shifts'" class="settings-section">
     <ion-card>
       <ion-card-header>
         <ion-card-title>กะเวลาทำงาน</ion-card-title>
@@ -348,10 +339,7 @@
         </div>
       </ion-card-content>
     </ion-card>
-  </div>
 
-  <!-- Attendance Settings -->
-  <div *ngIf="selectedSegment === 'attendance'" class="settings-section">
     <ion-card>
       <ion-card-header>
         <ion-card-title>การบันทึกเข้างาน</ion-card-title>
@@ -447,15 +435,17 @@
     <ion-card>
       <ion-card-header>
         <ion-card-title>ความปลอดภัย</ion-card-title>
-        <ion-card-subtitle>จัดการรหัส PIN และการเข้าถึงระบบ</ion-card-subtitle>
+        <ion-card-subtitle
+          >จัดการข้อมูลเข้าสู่ระบบและการเข้าถึง</ion-card-subtitle
+        >
       </ion-card-header>
 
       <ion-card-content>
         <ion-item lines="none" button (click)="openPinChange()">
           <ion-icon name="key-outline" slot="start" color="primary"></ion-icon>
           <ion-label>
-            <h2>เปลี่ยนรหัส PIN</h2>
-            <p>เปลี่ยนรหัส PIN สำหรับเข้าถึงการตั้งค่า Admin</p>
+            <h2>เปลี่ยนข้อมูลเข้าสู่ระบบ</h2>
+            <p>เปลี่ยนชื่อผู้ใช้และรหัสผ่านสำหรับ Admin</p>
           </ion-label>
           <ion-icon name="chevron-forward" slot="end"></ion-icon>
         </ion-item>

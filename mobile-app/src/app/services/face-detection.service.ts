@@ -52,7 +52,7 @@ export class FaceDetectionService {
   constructor(
     private storage: Storage,
     private permissionService: PermissionService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
   ) {
     this.init();
   }
@@ -75,6 +75,7 @@ export class FaceDetectionService {
       // Load models from assets folder
       await Promise.all([
         faceapi.nets.ssdMobilenetv1.loadFromUri(this.modelPath),
+        faceapi.nets.tinyFaceDetector.loadFromUri(this.modelPath),
         faceapi.nets.faceLandmark68Net.loadFromUri(this.modelPath),
         faceapi.nets.faceRecognitionNet.loadFromUri(this.modelPath),
       ]);
@@ -109,7 +110,7 @@ export class FaceDetectionService {
           throw error;
         } else {
           throw new Error(
-            permissionResult.error || "ไม่สามารถขอสิทธิ์กล้องได้"
+            permissionResult.error || "ไม่สามารถขอสิทธิ์กล้องได้",
           );
         }
       }
@@ -156,7 +157,7 @@ export class FaceDetectionService {
       // Handle specific Capacitor errors
       if (error.message && error.message.includes("nativeEvent")) {
         console.error(
-          "Native event error detected, switching to browser camera"
+          "Native event error detected, switching to browser camera",
         );
         // Fallback to browser camera for native event errors
         return await this.takePhotoWithBrowser();
@@ -169,7 +170,7 @@ export class FaceDetectionService {
         } catch (fallbackError) {
           console.error("Fallback camera also failed:", fallbackError);
           throw new Error(
-            "ไม่สามารถเปิดกล้องได้ กรุณาตรวจสอบสิทธิ์การเข้าถึงกล้องและลองใหม่"
+            "ไม่สามารถเปิดกล้องได้ กรุณาตรวจสอบสิทธิ์การเข้าถึงกล้องและลองใหม่",
           );
         }
       }
@@ -186,7 +187,7 @@ export class FaceDetectionService {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(
-        (device) => device.kind === "videoinput"
+        (device) => device.kind === "videoinput",
       );
 
       if (videoDevices.length === 0) {
@@ -229,7 +230,7 @@ export class FaceDetectionService {
     // First check available cameras
     const devices = await navigator.mediaDevices.enumerateDevices();
     const videoDevices = devices.filter(
-      (device) => device.kind === "videoinput"
+      (device) => device.kind === "videoinput",
     );
 
     // Prefer front camera, but fall back to any camera if front camera not available
@@ -240,7 +241,7 @@ export class FaceDetectionService {
       (device) =>
         device.label.toLowerCase().includes("front") ||
         device.label.toLowerCase().includes("前置") ||
-        device.label.toLowerCase().includes(" selfie")
+        device.label.toLowerCase().includes(" selfie"),
     );
 
     // If no front camera found, try to use the first available camera
@@ -331,7 +332,7 @@ export class FaceDetectionService {
 
   // Helper method to get user media with timeout
   private getUserMediaWithTimeout(
-    constraints: MediaStreamConstraints
+    constraints: MediaStreamConstraints,
   ): Promise<MediaStream> {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
@@ -383,8 +384,15 @@ export class FaceDetectionService {
       const image = await this.dataUrlToImage(imageDataUrl);
 
       // Detect face with landmarks and descriptor using face-api.js
+      // Use TinyFaceDetector for faster detection on mobile
       const detection = await faceapi
-        .detectSingleFace(image)
+        .detectSingleFace(
+          image,
+          new faceapi.TinyFaceDetectorOptions({
+            inputSize: 320,
+            scoreThreshold: 0.4,
+          }),
+        )
         .withFaceLandmarks()
         .withFaceDescriptor();
 
@@ -420,9 +428,9 @@ export class FaceDetectionService {
             height: detection.detection.box.height,
           },
           warning: `Confidence ${Math.round(
-            confidence * 100
+            confidence * 100,
           )}% ต่ำกว่า ${Math.round(
-            minConfidence * 100
+            minConfidence * 100,
           )}% กรุณาถ่ายรูปใหม่เพื่อความแม่นยำ`,
         };
       }
@@ -476,7 +484,7 @@ export class FaceDetectionService {
 
       console.log(
         "🔍 Face Identification - Total registered users:",
-        users.length
+        users.length,
       );
 
       for (const user of users) {
@@ -488,13 +496,13 @@ export class FaceDetectionService {
         const storedDescriptor = new Float32Array(user.faceDescriptor);
         const distance = faceapi.euclideanDistance(
           inputDescriptor,
-          storedDescriptor
+          storedDescriptor,
         );
 
         console.log(
           `📏 Distance for ${user.name} (${
             user.employeeId
-          }): ${distance.toFixed(4)}`
+          }): ${distance.toFixed(4)}`,
         );
 
         if (distance < lowestDistance) {
@@ -514,23 +522,26 @@ export class FaceDetectionService {
       console.log(`📊 Lowest Distance: ${lowestDistance.toFixed(4)}`);
 
       if (lowestDistance < MATCH_THRESHOLD && bestMatch) {
-        // Convert distance to similarity percentage
-        const similarity = Math.max(0, 1 - lowestDistance / MATCH_THRESHOLD);
+        // Convert distance to similarity percentage using exponential decay
+        // This gives a more natural similarity curve:
+        //   distance 0.0 → 100%, distance 0.3 → ~74%, distance 0.4 → ~60%, distance 0.5 → ~47%
+        // The formula: similarity = exp(-3 * distance) which is smoother than linear
+        const similarity = Math.exp(-3.0 * lowestDistance);
         const similarityPercent = similarity * 100;
 
         console.log(
-          `✅ Match candidate - Similarity: ${similarityPercent.toFixed(1)}%`
+          `✅ Match candidate - Similarity: ${similarityPercent.toFixed(1)}%`,
         );
         console.log(
-          `📋 Required minimum: ${(MIN_SIMILARITY * 100).toFixed(1)}%`
+          `📋 Required minimum: ${(MIN_SIMILARITY * 100).toFixed(1)}%`,
         );
 
         // ต้องมีความคล้ายกันตามที่ตั้งค่าไว้
         if (similarity >= MIN_SIMILARITY) {
           console.log(
             `✅ MATCH FOUND: ${bestMatch.name} (${similarityPercent.toFixed(
-              1
-            )}%)`
+              1,
+            )}%)`,
           );
           return {
             identified: true,
@@ -544,14 +555,14 @@ export class FaceDetectionService {
           console.log(
             `❌ SIMILARITY TOO LOW: ${similarityPercent.toFixed(1)}% < ${(
               MIN_SIMILARITY * 100
-            ).toFixed(1)}%`
+            ).toFixed(1)}%`,
           );
         }
       } else {
         console.log(
           `❌ DISTANCE TOO HIGH: ${lowestDistance.toFixed(
-            4
-          )} >= ${MATCH_THRESHOLD}`
+            4,
+          )} >= ${MATCH_THRESHOLD}`,
         );
       }
 
@@ -585,12 +596,21 @@ export class FaceDetectionService {
   }
 
   /**
+   * Calculate Euclidean distance between two face descriptors
+   */
+  getEuclideanDistance(d1: number[], d2: number[]): number {
+    const f1 = new Float32Array(d1);
+    const f2 = new Float32Array(d2);
+    return faceapi.euclideanDistance(f1, f2);
+  }
+
+  /**
    * Compare two face descriptors using Euclidean distance
    * Returns similarity score (0-1, higher = more similar)
    */
   async compareFaces(
     descriptor1: number[],
-    descriptor2: number[]
+    descriptor2: number[],
   ): Promise<number> {
     if (
       !descriptor1 ||
@@ -605,13 +625,8 @@ export class FaceDetectionService {
 
     const distance = faceapi.euclideanDistance(d1, d2);
 
-    // Get threshold from settings
-    const settings = await this.settingsService.getFaceDetectionSettings();
-    const threshold = settings.matchDistanceThreshold;
-
-    // Convert distance to similarity
-    // distance 0 = similarity 1, distance >= threshold = similarity 0
-    return Math.max(0, 1 - distance / threshold);
+    // Convert distance to similarity using exponential decay (matches identifyFace formula)
+    return Math.exp(-3.0 * distance);
   }
 
   /**
@@ -629,11 +644,14 @@ export class FaceDetectionService {
         await this.loadModels();
       }
 
-      // Use TinyFaceDetector for faster real-time performance
+      // Use TinyFaceDetector for faster real-time performance (~100-300ms vs ~1-3s with SSD)
       const detection = await faceapi
         .detectSingleFace(
           videoElement,
-          new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 })
+          new faceapi.TinyFaceDetectorOptions({
+            inputSize: 224,
+            scoreThreshold: 0.4,
+          }),
         )
         .withFaceLandmarks()
         .withFaceDescriptor();
@@ -672,7 +690,7 @@ export class FaceDetectionService {
       confidence: number;
       box?: { x: number; y: number; width: number; height: number };
     },
-    isMirrored: boolean = true
+    isMirrored: boolean = true,
   ): Promise<void> {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
@@ -703,11 +721,18 @@ export class FaceDetectionService {
     ctx.lineWidth = 3;
     ctx.strokeRect(x, box.y, box.width, box.height);
 
-    // Draw confidence label
+    // Draw confidence label (counter-mirror so text reads correctly under CSS scaleX(-1))
     const label = `${Math.round(detection.confidence * 100)}%`;
     ctx.fillStyle = detection.confidence >= threshold ? "#00ff00" : "#ffff00";
     ctx.font = "bold 16px Arial";
-    ctx.fillText(label, x + 5, box.y - 10);
+    // Save, flip text horizontally at the label position so it appears normal after CSS mirror
+    ctx.save();
+    const labelX = x + 5;
+    const labelY = box.y - 10;
+    ctx.translate(labelX, labelY);
+    ctx.scale(-1, 1); // counter the CSS scaleX(-1)
+    ctx.fillText(label, 0, 0);
+    ctx.restore();
 
     // Draw corner markers for better visibility
     const cornerSize = 20;

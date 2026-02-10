@@ -7,8 +7,14 @@
 - ✅ Core UI: check-in/out, history, manual check-in, registration
 - ✅ IndexedDB offline-first storage
 - ✅ Face recognition (@vladmandic/face-api@1.7.15)
-- ✅ Auto-capture at 90% confidence + duplicate prevention
-- ✅ Face matching (0.6 threshold) + duplicate face detection in registration
+- ✅ Auto-capture at 80% confidence (scan) / 75% (register) + duplicate prevention
+- ✅ Face matching (0.65 distance threshold, 60% min similarity) + duplicate face detection in registration
+- ✅ TinyFaceDetector for fast real-time face detection
+- ✅ Admin login with username/password (CompanyProfile concept)
+- ✅ Admin dashboard grouped menus (3 categories)
+- ✅ Auto-checkout enabled by default (8 hours)
+- ✅ Employee swipe-to-delete
+- ✅ Admin mode navigation stays in dashboard
 - ✅ Employee name display in attendance history
 - ✅ UX: required fields, camera stop after scan, scan mode popup fix
 - ✅ APK built successfully (~18.4 MB)

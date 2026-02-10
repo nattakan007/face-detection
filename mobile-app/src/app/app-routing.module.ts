@@ -40,7 +40,6 @@ const routes: Routes = [
     path: "history",
     loadChildren: () =>
       import("./history/history.module").then((m) => m.HistoryPageModule),
-    canActivate: [AuthGuard],
   },
   {
     path: "report",

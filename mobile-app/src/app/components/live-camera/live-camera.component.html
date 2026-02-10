@@ -59,21 +59,21 @@
           <ion-icon name="person-outline"></ion-icon>
           <span>กรุณาวางหน้าตรงกลางกล้อง</span>
         </div>
-        <!-- พบใบหน้าแต่ความแม่นยำยังไม่ถึง 80% -->
+        <!-- พบใบหน้าแต่ความแม่นยำยังไม่ถึง threshold -->
         <div
           class="status-badge scanning"
           *ngIf="
-            realTimeDetection?.detected && realTimeDetection.confidence < 0.8
+            realTimeDetection?.detected && realTimeDetection.confidence < 0.75
           "
         >
           <ion-icon name="scan-outline"></ion-icon>
           <span>กำลังจับภาพ...</span>
         </div>
-        <!-- ความแม่นยำถึง 80% ขึ้นไป - จะถ่ายอัตโนมัติ -->
+        <!-- ความแม่นยำเพียงพอ - จะถ่ายอัตโนมัติ -->
         <div
           class="status-badge detected"
           *ngIf="
-            realTimeDetection?.detected && realTimeDetection.confidence >= 0.8
+            realTimeDetection?.detected && realTimeDetection.confidence >= 0.75
           "
         >
           <ion-icon name="checkmark-circle"></ion-icon>

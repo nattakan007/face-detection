@@ -16,8 +16,8 @@
 mobile-app/src/app/
 ├── components/          # Shared components
 │   ├── live-camera/     # Camera + face overlay
-│   ├── pin-entry/       # PIN authentication
-│   └── pin-change/      # PIN management
+│   ├── pin-entry/       # PIN entry (legacy)
+│   └── pin-change/      # Credential management (username/password)
 ├── pages/               # Full-page views
 │   ├── admin-dashboard/ # Admin panel
 │   ├── admin-settings/  # Settings management
@@ -35,7 +35,7 @@ mobile-app/src/app/
 │   ├── sync-scheduler.service.ts   # Background sync
 │   ├── auto-checkout.service.ts    # Auto check-out
 │   ├── supabase.service.ts         # Supabase client
-│   ├── auth.service.ts             # Authentication
+│   ├── auth.service.ts             # Authentication (username/password + CompanyProfile)
 │   └── permission.service.ts       # Native permissions
 ├── scan/                # Main scan page (check-in/out)
 ├── history/             # Attendance history

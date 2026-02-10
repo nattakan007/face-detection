@@ -68,7 +68,7 @@ export class LiveCameraComponent implements OnInit, OnDestroy {
 
   // Auto-capture state (loaded from settings)
   private lastAutoCaptureTime: number = 0;
-  private autoCaptureThreshold: number = 0.9; // Will be overwritten by settings
+  private autoCaptureThreshold: number = 0.75; // TinyFaceDetector balanced default (75%)
   private autoCaptureCooldown: number = 2000; // Will be overwritten by settings
 
   // Test mode - show test button on browser only
@@ -109,8 +109,8 @@ export class LiveCameraComponent implements OnInit, OnDestroy {
       if (settings && settings.autoCaptureThresholdScan !== undefined) {
         this.autoCaptureThreshold = settings.autoCaptureThresholdScan;
       } else {
-        // If settings not found, use a reasonable default instead of 0.98
-        this.autoCaptureThreshold = 0.8;
+        // If settings not found, use a reasonable default for TinyFaceDetector
+        this.autoCaptureThreshold = 0.75;
       }
       if (settings && settings.autoCaptureCooldown !== undefined) {
         this.autoCaptureCooldown = settings.autoCaptureCooldown;
@@ -120,8 +120,8 @@ export class LiveCameraComponent implements OnInit, OnDestroy {
       );
     } catch (error) {
       console.error("Error loading settings:", error);
-      // Use reasonable defaults if error (not 0.98 which is too strict)
-      this.autoCaptureThreshold = 0.9;
+      // Use reasonable defaults for TinyFaceDetector if error
+      this.autoCaptureThreshold = 0.75;
       this.autoCaptureCooldown = 2000;
     }
   }

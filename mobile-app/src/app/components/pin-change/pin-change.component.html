@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>เปลี่ยนรหัส PIN</ion-title>
+    <ion-title>เปลี่ยนข้อมูลเข้าสู่ระบบ</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="cancel()">
         <ion-icon name="close"></ion-icon>
@@ -13,7 +13,7 @@
   <div class="pin-change-container">
     <div class="info-section">
       <ion-icon name="key-outline" color="primary"></ion-icon>
-      <p>กรุณาใส่รหัส PIN เดิม และตั้งรหัสใหม่</p>
+      <p>เปลี่ยนชื่อผู้ใช้และรหัสผ่านสำหรับเข้าระบบ Admin</p>
     </div>
 
     <!-- Error Message -->
@@ -22,47 +22,58 @@
       <span>{{ error }}</span>
     </div>
 
-    <!-- Old PIN -->
+    <!-- Current Password -->
     <ion-item>
       <ion-label position="stacked"
-        >รหัส PIN เดิม <span class="required">*</span></ion-label
+        >รหัสผ่านปัจจุบัน <span class="required">*</span></ion-label
       >
       <ion-input
-        type="password"
-        [(ngModel)]="oldPin"
-        placeholder="ใส่รหัส PIN เดิม"
-        maxlength="6"
-        inputmode="numeric"
+        [type]="showCurrentPassword ? 'text' : 'password'"
+        [(ngModel)]="currentPassword"
+        placeholder="ใส่รหัสผ่านปัจจุบัน"
+        autocomplete="current-password"
       >
       </ion-input>
     </ion-item>
 
-    <!-- New PIN -->
+    <!-- New Username -->
     <ion-item>
       <ion-label position="stacked"
-        >รหัส PIN ใหม่ <span class="required">*</span></ion-label
+        >ชื่อผู้ใช้ / บริษัท <span class="required">*</span></ion-label
       >
       <ion-input
-        type="password"
-        [(ngModel)]="newPin"
-        placeholder="ใส่รหัส PIN ใหม่ (4-6 ตัว)"
-        maxlength="6"
-        inputmode="numeric"
+        type="text"
+        [(ngModel)]="newUsername"
+        placeholder="ชื่อผู้ใช้หรือชื่อบริษัท"
+        autocapitalize="off"
       >
       </ion-input>
     </ion-item>
 
-    <!-- Confirm New PIN -->
+    <!-- New Password -->
     <ion-item>
       <ion-label position="stacked"
-        >ยืนยันรหัส PIN ใหม่ <span class="required">*</span></ion-label
+        >รหัสผ่านใหม่ <span class="required">*</span></ion-label
       >
       <ion-input
-        type="password"
-        [(ngModel)]="confirmPin"
-        placeholder="ใส่รหัส PIN ใหม่อีกครั้ง"
-        maxlength="6"
-        inputmode="numeric"
+        [type]="showNewPassword ? 'text' : 'password'"
+        [(ngModel)]="newPassword"
+        placeholder="รหัสผ่านใหม่ (อย่างน้อย 4 ตัว)"
+        autocomplete="new-password"
+      >
+      </ion-input>
+    </ion-item>
+
+    <!-- Confirm New Password -->
+    <ion-item>
+      <ion-label position="stacked"
+        >ยืนยันรหัสผ่านใหม่ <span class="required">*</span></ion-label
+      >
+      <ion-input
+        [type]="showNewPassword ? 'text' : 'password'"
+        [(ngModel)]="confirmPassword"
+        placeholder="ใส่รหัสผ่านใหม่อีกครั้ง"
+        autocomplete="new-password"
       >
       </ion-input>
     </ion-item>
@@ -72,9 +83,11 @@
       <ion-button
         expand="block"
         (click)="submit()"
-        [disabled]="!oldPin || !newPin || !confirmPin"
+        [disabled]="
+          !currentPassword || !newUsername || !newPassword || !confirmPassword
+        "
       >
-        เปลี่ยนรหัส PIN
+        บันทึกการเปลี่ยนแปลง
       </ion-button>
       <ion-button expand="block" fill="outline" (click)="cancel()">
         ยกเลิก
@@ -85,11 +98,10 @@
     <div class="info-box">
       <ion-icon name="information-circle-outline"></ion-icon>
       <div class="info-text">
-        <p><strong>ข้อกำหนดรหัส PIN:</strong></p>
+        <p><strong>ข้อกำหนด:</strong></p>
         <ul>
-          <li>ต้องมีความยาว 4-6 ตัว</li>
-          <li>ต้องเป็นตัวเลขเท่านั้น</li>
-          <li>ห้ามใช้รหัสเดียวกับรหัสเดิม</li>
+          <li>รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร</li>
+          <li>ชื่อผู้ใช้ใช้เป็นชื่อโปรไฟล์บริษัท</li>
         </ul>
       </div>
     </div>

@@ -46,8 +46,8 @@
 
     <!-- Menu Section -->
     <div class="menu-section">
-      <h2 class="section-title">เมนูจัดการ</h2>
-
+      <!-- กลุ่ม: จัดการพนักงาน -->
+      <h2 class="section-title">จัดการพนักงาน</h2>
       <div class="menu-grid">
         <button class="menu-card" (click)="navigateTo('/register')">
           <div class="menu-icon-wrapper color-green">
@@ -62,7 +62,11 @@
           </div>
           <span class="menu-label">รายชื่อ<br />พนักงาน</span>
         </button>
+      </div>
 
+      <!-- กลุ่ม: บันทึกเวลา & รายงาน -->
+      <h2 class="section-title">บันทึกเวลา & รายงาน</h2>
+      <div class="menu-grid">
         <button class="menu-card" (click)="navigateTo('/report')">
           <div class="menu-icon-wrapper color-purple">
             <ion-icon name="bar-chart"></ion-icon>
@@ -76,7 +80,11 @@
           </div>
           <span class="menu-label">ประวัติ<br />ทั้งหมด</span>
         </button>
+      </div>
 
+      <!-- กลุ่ม: ตั้งค่าระบบ -->
+      <h2 class="section-title">ตั้งค่าระบบ</h2>
+      <div class="menu-grid">
         <button class="menu-card" (click)="navigateTo('/company-profile')">
           <div class="menu-icon-wrapper color-teal">
             <ion-icon name="business"></ion-icon>

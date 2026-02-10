@@ -17,42 +17,65 @@
         <ion-icon [name]="isSuccess ? 'lock-open' : 'lock-closed'"></ion-icon>
       </div>
       <h1 class="login-title">ระบบผู้ดูแล</h1>
-      <p class="login-subtitle">กรุณาใส่รหัส PIN เพื่อเข้าสู่ระบบ</p>
+      <p class="login-subtitle">กรุณาเข้าสู่ระบบเพื่อจัดการ</p>
     </div>
 
-    <!-- PIN Display -->
-    <div class="pin-display">
-      <div
-        class="pin-dot"
-        *ngFor="let dot of pinDots; let i = index"
-        [class.filled]="i < pin.length"
-        [class.error]="isError"
-      ></div>
+    <!-- Login Form -->
+    <div class="login-form">
+      <div class="input-group">
+        <ion-icon name="person-outline" class="input-icon"></ion-icon>
+        <input
+          type="text"
+          [(ngModel)]="username"
+          placeholder="ชื่อผู้ใช้ / บริษัท"
+          class="login-input"
+          [class.error]="isError"
+          (keyup.enter)="focusPassword()"
+          autocapitalize="off"
+          autocomplete="username"
+        />
+      </div>
+      <div class="input-group">
+        <ion-icon name="lock-closed-outline" class="input-icon"></ion-icon>
+        <input
+          #passwordInput
+          [type]="showPassword ? 'text' : 'password'"
+          [(ngModel)]="password"
+          placeholder="รหัสผ่าน"
+          class="login-input"
+          [class.error]="isError"
+          (keyup.enter)="login()"
+          autocomplete="current-password"
+        />
+        <ion-icon
+          [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
+          class="toggle-password"
+          (click)="showPassword = !showPassword"
+        ></ion-icon>
+      </div>
     </div>
 
     <!-- Error Message -->
     <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
 
-    <!-- Number Pad -->
-    <div class="numpad">
-      <div class="numpad-row" *ngFor="let row of numpadRows">
-        <button
-          class="numpad-btn"
-          *ngFor="let key of row"
-          (click)="onKeyPress(key)"
-          [class.empty]="key === ''"
-          [disabled]="key === '' || isProcessing"
-        >
-          <span *ngIf="key !== 'backspace' && key !== ''">{{ key }}</span>
-          <ion-icon
-            *ngIf="key === 'backspace'"
-            name="backspace-outline"
-          ></ion-icon>
-        </button>
-      </div>
-    </div>
+    <!-- Login Button -->
+    <ion-button
+      expand="block"
+      (click)="login()"
+      [disabled]="isProcessing || !username || !password"
+      class="login-button"
+      color="primary"
+    >
+      <ion-spinner
+        *ngIf="isProcessing"
+        name="crescent"
+        slot="start"
+      ></ion-spinner>
+      <span *ngIf="!isProcessing">เข้าสู่ระบบ</span>
+      <span *ngIf="isProcessing">กำลังตรวจสอบ...</span>
+    </ion-button>
 
-    <!-- Default PIN Hint -->
-    <p class="pin-hint">รหัส PIN เริ่มต้น: 000000</p>
+    <!-- Default Credentials Hint -->
+    <p class="pin-hint">ทดสอบ: sailor / admin123</p>
   </div>
 </ion-content>

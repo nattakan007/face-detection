@@ -8,66 +8,68 @@ import { AuthService } from "../../services/auth.service";
   styleUrls: ["./pin-change.component.scss"],
 })
 export class PinChangeComponent {
-  oldPin: string = "";
-  newPin: string = "";
-  confirmPin: string = "";
+  currentPassword: string = "";
+  newUsername: string = "";
+  newPassword: string = "";
+  confirmPassword: string = "";
+  showCurrentPassword: boolean = false;
+  showNewPassword: boolean = false;
   error: string = "";
 
   constructor(
     private modalCtrl: ModalController,
     private authService: AuthService,
-    private alertController: AlertController
+    private alertController: AlertController,
   ) {}
 
+  async ngOnInit() {
+    // Pre-fill current username
+    this.newUsername = await this.authService.getCompanyName();
+  }
+
   /**
-   * Submit PIN change
+   * Submit credential change
    */
   async submit() {
     this.error = "";
 
-    // Validate new PIN
-    if (this.newPin.length < 4 || this.newPin.length > 6) {
-      this.error = "รหัส PIN ใหม่ต้องมี 4-6 ตัว";
+    if (!this.newUsername || this.newUsername.trim().length === 0) {
+      this.error = "กรุณาระบุชื่อผู้ใช้ / บริษัท";
       return;
     }
 
-    if (!/^\d+$/.test(this.newPin)) {
-      this.error = "รหัส PIN ต้องเป็นตัวเลขเท่านั้น";
+    if (this.newPassword.length < 4) {
+      this.error = "รหัสผ่านใหม่ต้องมีอย่างน้อย 4 ตัวอักษร";
       return;
     }
 
-    // Check if new PIN matches confirm
-    if (this.newPin !== this.confirmPin) {
-      this.error = "รหัส PIN ใหม่ไม่ตรงกัน";
+    if (this.newPassword !== this.confirmPassword) {
+      this.error = "รหัสผ่านใหม่ไม่ตรงกัน";
       return;
     }
 
-    // Check if new PIN is same as old PIN
-    if (this.oldPin === this.newPin) {
-      this.error = "รหัส PIN ใหม่ต้องต่างจากรหัสเดิม";
-      return;
-    }
-
-    // Verify old PIN and set new PIN
-    const success = await this.authService.changePin(this.oldPin, this.newPin);
+    const success = await this.authService.changeCredentials(
+      this.currentPassword,
+      this.newUsername,
+      this.newPassword,
+    );
 
     if (success) {
-      // Show success message
       const alert = await this.alertController.create({
         header: "สำเร็จ",
-        message: "เปลี่ยนรหัส PIN เรียบร้อยแล้ว",
+        message: "เปลี่ยนข้อมูลเข้าสู่ระบบเรียบร้อยแล้ว",
         buttons: ["ตกลง"],
       });
       await alert.present();
 
       this.modalCtrl.dismiss({ success: true }, "confirm");
     } else {
-      this.error = "รหัส PIN เดิมไม่ถูกต้อง";
+      this.error = "รหัสผ่านปัจจุบันไม่ถูกต้อง";
     }
   }
 
   /**
-   * Cancel PIN change
+   * Cancel
    */
   cancel() {
     this.modalCtrl.dismiss(null, "cancel");
